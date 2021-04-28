@@ -1,0 +1,16 @@
+#!/bin/zsh
+#
+# Make sure that VSCODEENV is set as settings in the VSCODE settings.json:
+#   "terminal.integrated.env.linux": {
+#         .....
+#        "VSCODEENV":"true"
+#    }
+
+# Do not start tmux if we are already inside a tmux or in a vscode
+if [[ -z "$TMUX" ]]; then
+   if [[ $VSCODEENV = "true" ]]; then
+      (tmux -2 -u attach -t vscode || tmux -2 -u new -s vscode \; split-window -v \; select-pane -t0) && exit
+   else
+       (tmux -2 -u attach -t console || tmux -2 -u new -s console \; split-window -h \; select-pane -t0) && exit
+   fi
+fi

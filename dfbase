@@ -1,0 +1,154 @@
+# -*- mode: dockerfile -*-
+# Base dockerfile
+#
+# This dockerfile is to build the basic opensuse/leap image based on which
+# all the other application images will be built.
+#
+# To build a docker image based on this file, use:
+#
+# docker build --tag devlab/base:v1 --target base .
+#
+# Author: arvindd
+# Created: 21.Apr.2021
+#
+# Copyright (c) 2021 Arvind Devarajan
+# Licensed to you under the MIT License.
+# See the LICENSE file in the project root for more information.
+#
+
+FROM opensuse/leap:15.2 as base
+LABEL Name="Base Jupyter image"
+LABEL Description="This image is the base for all other images"
+
+# All zypper commands have a -n for making them non-interactive
+# First, make sure we have the latest repos and updates for
+# all the packages installed.
+# We also install the timezone package to first set the
+# time zone, and our versatile vim
+RUN zypper -n refresh && zypper -n update && \
+    zypper -n install timezone neovim zsh \
+              iputils unzip tar gzip bzip2 xz which iproute2 \
+              sudo wget curl git tmux direnv python3 python3-pip
+
+# Make sure that dates are correct within the container
+RUN rm -f /etc/localtime /etc/localtime.rpmsave
+RUN ln -s /usr/share/zoneinfo/Asia/Kolkata /etc/localtime
+
+# Add all skel files so that any users created will get them
+RUN mkdir -p /etc/skel/.config/pip/
+COPY pip.conf /etc/skel/.config/pip/
+COPY .tmux.conf /etc/skel/
+RUN mkdir -p /etc/skel/bin/
+RUN echo "(setq make-backup-files nil)" > /etc/skel/.emacs
+
+# Special care for root, because this is created even before skel existed
+RUN mkdir -p /root/.config/pip/
+COPY pip.conf /root/.config/pip/
+RUN echo "(setq make-backup-files nil)" > /root/.emacs
+
+# Create a normal user for our usage and give sudo rights for that user
+RUN useradd -s /bin/zsh -m -d /home/dev dev
+RUN echo "dev ALL=(ALL) NOPASSWD:SETENV: /usr/bin/zypper,/bin/zsh" > /etc/sudoers.d/90_dev
+
+# All our global applications go here
+RUN mkdir -p /opt
+RUN chown dev:users /opt
+
+# Get the latest pip
+RUN /usr/bin/python3 -m pip install --upgrade pip
+
+# Copy and extract emacs 27.1
+COPY emacs.tgz /opt/
+RUN tar xzvf /opt/emacs.tgz
+RUN rm /opt/emacs.tgz
+
+# Some common aliases and functions
+# Function to cleanly add some directory to the PATH variable
+RUN echo "pupdate() { case \":\${PATH:=\$1}:\" in *:\"\$1\":*) ;; *) PATH=\"\$1:\$PATH\" ;; esac; }"  >> /etc/zsh.zshrc.local
+RUN echo "eupdate() { case \":\${(P)1:=\$2}:\" in *:\"\$2\":*) ;; *) eval \"\$1=\$2:\\\"\${(P)1}\\\"\" ;; esac; }"  >> /etc/zsh.zshrc.local
+RUN echo "pupdate /opt/emacs/bin" >> /etc/zsh.zshrc.local
+RUN echo "pupdate /opt/node/bin" >> /etc/zsh.zshrc.local
+RUN echo "pupdate /opt/scripts" >> /etc/zsh.zshrc.local
+RUN echo "pupdate /opt/jupyter/srv/bin" >> /etc/zsh.zshrc.local
+RUN echo "pupdate /opt/julia/bin" >> /etc/zsh.zshrc.local
+RUN echo "pupdate ~/bin" >> /etc/zsh.zshrc.local
+RUN echo "pupdate ~/.local/bin" >> /etc/zsh.zshrc.local
+RUN echo "alias rs='sudo -H zsh'"  >> /etc/zsh.zshrc.local
+RUN echo "alias zypper='sudo zypper'" >> /etc/zsh.zshrc.local
+RUN echo "alias e=emacs -nw" >> /etc/zsh.zshrc.local
+RUN echo "alias vi=nvim" >> /etc/zsh.zshrc.local
+RUN echo "alias vim=nvim" >> /etc/zsh.zshrc.local
+RUN echo "alias rm=rm -i" >> /etc/zsh.zshrc.local
+RUN echo "alias cp=cp -i" >> /etc/zsh.zshrc.local
+RUN echo "alias mv=mv -i" >> /etc/zsh.zshrc.local
+ENV PATH=/opt/jupyter/srv/bin:/opt/julia/bin:/opt/scripts:${PATH}
+
+# Now, install everything else with the user's id
+USER dev
+WORKDIR /home/dev
+
+# Add node for jupyter lab's extensions
+RUN curl https://nodejs.org/dist/v16.0.0/node-v16.0.0-linux-x64.tar.xz -o /opt/node.tar.xz
+RUN tar xJvf /opt/node.tar.xz -C /opt
+RUN mv /opt/node-v16.0.0-linux-x64 /opt/node
+RUN rm -f /opt/node.tar.xz
+# Touch a file with the version number of node so that it
+# is easy to know the version inside the devlab.
+RUN touch /opt/node/v16.0.0-linux-x64
+
+# Add Julia as a base language (apart from Python3 that is already present)
+RUN curl https://julialang-s3.julialang.org/bin/linux/x64/1.6/julia-1.6.1-linux-x86_64.tar.gz -o /opt/julia.tar.gz
+RUN tar xzvf /opt/julia.tar.gz -C /opt
+RUN mv /opt/julia-1.6.1 /opt/julia
+RUN rm -f /opt/julia.tar.gz
+RUN touch /opt/julia/v1.6.1
+
+# Install Jupyter in /opt/jupyter
+ENV JUPYTER_HOME=/opt/jupyter
+ENV JUPYTER_CONFIG_DIR=${JUPYTER_HOME}/config
+ENV JUPYTER_DATA_DIR=${JUPYTER_HOME}/data
+ENV JUPYTER_RUNTIME_DIR=${JUPYTER_HOME}/runtime
+ENV JUPYTERLAB_WORKSPACES_DIR=${JUPYTER_HOME}/workspaces
+ENV JUPYTER_NBDIR=${JUPYTER_HOME}/nb
+RUN pip install --target ${JUPYTER_HOME}/srv jupyterlab
+ENV PYTHONPATH=${PYTHONPATH}:/opt/jupyter/srv
+
+# Generate Jupyter configuration for notebooks
+# We will have all notebooks in /opt/jupyter/nb AND
+# We will make jupyter listen on a specific port number.
+# JPYPORT is passed to us as a build-arg
+ARG JPYPORT
+RUN jupyter lab --generate-config
+RUN jupyter notebook --generate-config
+
+# Change the location of the notebook directory
+RUN sed -i "s@.*c.NotebookApp.notebook_dir\ .*@c.NotebookApp.notebook_dir\ =\ \'/home/dev/work\'@" ${JUPYTER_CONFIG_DIR}/jupyter_notebook_config.py
+
+# Help jupyter find it's static assets
+RUN sed -i "s@.*c.LabApp.app_dir\ .*@c.LabApp.app_dir\ =\ \'/opt/jupyter/srv/share/jupyter/lab\'@" ${JUPYTER_CONFIG_DIR}/jupyter_lab_config.py
+
+# Change the port of jupyter lab and make sure it listens on all interfaces
+RUN sed -i "s@.*c.ServerApp.port\ .*@c.ServerApp.port\ =\ ${JPYPORT}@" ${JUPYTER_CONFIG_DIR}/jupyter_lab_config.py
+RUN sed -i "s@.*c.ServerApp.ip\ .*@c.ServerApp.ip\ =\ \'*\'@" ${JUPYTER_CONFIG_DIR}/jupyter_lab_config.py
+
+# Install the IJulia package to use Julia with Jupyter
+RUN julia -e 'using Pkg; Pkg.add("IJulia");'
+
+# Add SSL certificates
+# RUN mkdir -p /opt/ssl
+# COPY --chown=dev:users ["localhost.key", "localhost.crt", "/opt/ssl/"]
+# RUN sed -i "s@.*c.ServerApp.certfile\ .*@c.ServerApp.certfile\ =\ \'/opt/ssl/localhost.crt\'@" ${JUPYTER_CONFIG_DIR}/jupyter_lab_config.py
+# RUN sed -i "s@.*c.ServerApp.keyfile\ .*@c.ServerApp.keyfile\ =\ \'/opt/ssl/localhost.key\'@" ${JUPYTER_CONFIG_DIR}/jupyter_lab_config.py
+# Install Oh-my-zsh
+RUN sh -c "$(curl -fsSL https://raw.github.com/ohmyzsh/ohmyzsh/master/tools/install.sh)" "" --keep-zshrc
+RUN sed -i 's/ZSH_THEME=.*/ZSH_THEME=\"agnoster\"/' ~/.zshrc
+RUN echo 'eval "$(direnv hook zsh)"' >> ~/.zshrc
+COPY omzsh-context .
+RUN cat omzsh-context >>  ~/.zshrc
+RUN rm -f omzsh-context
+
+# Default port of the jupyter lab is exposed here
+EXPOSE ${JPYPORT}
+RUN mkdir -p /opt/scripts
+COPY ["starttmux", "entrypoint", "/opt/scripts/"]
+ENTRYPOINT [ "/opt/scripts/entrypoint" ]
