@@ -45,7 +45,7 @@ RUN echo "(setq make-backup-files nil)" > /etc/skel/.emacs
 RUN mkdir -p /root/.config/pip/
 COPY pip.conf /root/.config/pip/
 RUN echo "(setq make-backup-files nil)" > /root/.emacs
-COPY .zshrc.home.devlab /root/.zshrc
+COPY zshrc.home.devlab /root/.zshrc
 
 # Create a normal user for our usage and give sudo rights for that user
 RUN useradd -s /bin/zsh -m -d /home/dev dev
@@ -64,7 +64,7 @@ RUN tar xzvf /opt/emacs.tgz
 RUN rm /opt/emacs.tgz
 
 # Some common aliases and functions to be added into /etc/zsh.zshrc.local
-COPY zshrc.etc.local.devlab /etc/
+COPY zsh.zshrc.local /etc/
 ENV PATH=/opt/jupyter/srv/bin:/opt/julia/bin:/opt/scripts:${PATH}
 
 # Now, install everything else with the user's id
@@ -129,15 +129,18 @@ RUN julia -e 'using Pkg; Pkg.add("IJulia");'
 # RUN sed -i "s@.*c.ServerApp.certfile\ .*@c.ServerApp.certfile\ =\ \'/opt/ssl/localhost.crt\'@" ${JUPYTER_CONFIG_DIR}/jupyter_lab_config.py
 # RUN sed -i "s@.*c.ServerApp.keyfile\ .*@c.ServerApp.keyfile\ =\ \'/opt/ssl/localhost.key\'@" ${JUPYTER_CONFIG_DIR}/jupyter_lab_config.py
 # Install Oh-my-zsh
+RUN sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)" "" --keep-zshrc
+# ---------------
 # Typical way of using curl/wget from raw github does not work sometimes if github raw access is
 # having a problem. Hence we go another way: clone the github repo, and then execute install from there.
-RUN git clone https://github.com/ohmyzsh/ohmyzsh.git tmpozsh
-RUN tmpozsh/tools/install.sh
-RUN rm -rf tmpozsh
+# RUN git clone https://github.com/ohmyzsh/ohmyzsh.git tmpozsh
+# RUN tmpozsh/tools/install.sh --keep-zshrc
+# RUN rm -rf tmpozsh
+# ---------------
 RUN sed -i 's/ZSH_THEME=.*/ZSH_THEME=\"agnoster\"/' ~/.zshrc
 
 # If sourcing our special .zshrc is not already in there, source our .zshrc.devlab in .zshrc
-COPY zshrc.home.devlab ./.zsh.zshrc.local
+COPY zshrc.home.devlab ./.zshrc.home.devlab
 RUN if ! grep -q ".zshrc.home.devlab" ~/.zshrc; then echo "# The next line is added by devlab; DO NOT REMOVE IT!"; echo ". ~/.zshrc.home.devlab" >> ~/.zshrc; fi
 
 # Finally, just create a DEVLABLANG
