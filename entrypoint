@@ -24,12 +24,55 @@ set -e
 mkdir -p work
 sudo zsh -c 'chown dev:users work'
 
+# Make sure to clear all config files before adding 
+# default configuration in them
+cat /dev/null > ~/.wgetrc
+cat /dev/null > ~/.curlrc
+sudo zsh -c 'cat /dev/null > /root/.wgetrc'
+sudo zsh -c 'cat /dev/null > /root/.curlrc'
+
 # If we have mounted a /opt/certs directory, then, we
 # have some certificates to be installed.
 # our trust stores.
 if [[ -d /opt/certs ]]; then
+    # First, update the trusted certificate store
     sudo zsh -c "cp /opt/certs/* /etc/pki/trust/anchors"
     sudo zsh -c "update-ca-certificates"
+
+    # Now, add this directory as trusted CA store for both
+    # wget and curl. This helps in their use without a problem.
+    echo "ca_directory=/opt/certs" >> ~/.wgetrc
+    sudo zsh -c 'echo "ca_directory=/opt/certs" >> /root/.wgetrc'
+    echo "capath=/opt/certs" >> ~/.curlrc
+    sudo zsh -c 'echo "capath=/opt/certs" >> /root/.curlrc'    
 fi 
+
+# If we have http_proxy variables, add this information in
+# all the utility config files
+if [[ !(-z $HTTP_PROXY) ]]; then
+    http=$HTTP_PROXY
+elif [[ !(-z $http_proxy) ]]; then
+    http=$http_proxy
+fi
+
+# Same with https variables...
+if [[ !(-z $HTTPS_PROXY) ]]; then
+    http=$HTTPS_PROXY
+elif [[ !(-z $https_proxy) ]]; then
+    http=$https_proxy
+fi
+
+# Make sure to define all proxy environment variables
+if [[ !(-z $http) || !(-z $https) ]]; then
+    echo "export http_proxy=$http" >> ~/.envrc
+    echo "export https_proxy=$https" >> ~/.envrc
+    echo "export no_proxy=localhost" >> ~/.envrc    
+    echo "export HTTP_PROXY=$http" >> ~/.envrc
+    echo "export HTTPS_PROXY=$https" >> ~/.envrc
+    echo "export NO_PROXY=localhost" >> ~/.envrc    
+
+    echo "use_proxy=on" >> ~/.wgetrc
+    sudo zsh -c 'echo "use_proxy=on" >> /root/.wgetrc'
+fi
 
 exec "$@"
