@@ -38,7 +38,6 @@ RUN ln -s /usr/share/zoneinfo/Asia/Kolkata /etc/localtime
 RUN mkdir -p /etc/skel/.config/pip/
 COPY pip.conf /etc/skel/.config/pip/
 COPY tmux.conf /etc/skel/.tmux.conf
-RUN mkdir -p /etc/skel/bin/
 RUN echo "(setq make-backup-files nil)" > /etc/skel/.emacs
 
 # Special care for root, because this is created even before skel existed
@@ -147,22 +146,10 @@ RUN if ! grep -q ".zshrc.home.devlab" ~/.zshrc; then echo "# The next line is ad
 # Finally, just create a DEVLABLANG
 RUN echo export DEVLABLANG=base-v1 > .envrc
 
-# Move all files in the home directory into a safe location in the container.
-# On startup, we will move back these files into the home directory so that it is possible
-# to mount a host directory into the home location. 
-# By default, if a file exists in a directory inside the container, and the same location is also
-# used for mounting a host-directory, the existing files in the container are not seen (they are overlayed).
-# We therefore use this "move home while build and move them back at the startup" idea to allow for mounting
-# a host directory on the home location.
-# Now, why are we particular to mount a host on the home? Well, this allows for new installations by the
-# user of our devlab in their own home - and since we mount a host on to home, these installations 
-# remain across container sessions as long as the same directory is mounted again on every startup. Some
-# package managers such as pip automatically install their packages in home directories if they are not
-# able to access site-wide locations (due to permissions) - and these scenarios are automatically taken
-# care by our "mount host dir on home" method.
-RUN zsh -c "mv /home/dev/*(DN) /opt/homesave/"
+# Finally, declare the home-directory as a volume so that all installs in the home directoru
+# and all work within the home-directory by the users remain there permantly.
+VOLUME /home/dev
 
-# Default port of the jupyter lab is exposed here
 EXPOSE ${JPYPORT}
 RUN mkdir -p /opt/scripts
 COPY ["starttmux", "entrypoint", "/opt/scripts/"]

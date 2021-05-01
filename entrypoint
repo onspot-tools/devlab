@@ -20,13 +20,6 @@
 
 set -e
 
-# If we do not have a ".homesetup" file, then move all
-# files from homesave into our home directory
-# if [[ ! -f ~/.homesetup ]]; then
-#     cp /opt/homesave/*(DN) ~/
-#     touch ~/.homesetup
-# fi
-
 # Make sure to clear all config files before adding 
 # default configuration in them
 cat /dev/null > ~/.wgetrc

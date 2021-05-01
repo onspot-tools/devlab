@@ -12,7 +12,7 @@
 #
 
 # Build parameters
-IMGNAME=arvindds/devlab
+IMGNAME=ramdootin/devlab
 LANG=base
 VERSION=v1
 

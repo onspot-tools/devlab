@@ -44,7 +44,7 @@ if ( $cnt.Lines -eq 2 ) {
 }  
 
 # Build parameters
-$IMGNAME = "arvindds/devlab"
+$IMGNAME = "ramdootin/devlab"
 $LANG = "base"
 $VERSION = "v1"
 
@@ -62,25 +62,20 @@ if ( Test-Path trustedcerts/* ) {
     $MOUNT_CERTS = ""
 }
 
-# Just to keep our home directories clean, we'll create a separate
-# directory "home" and mount that as our home directory in devlab
-if ( !(Test-Path home) ) {
-    New-Item -ItemTyme Directory -Force -Path home
-}
-
 switch ($progarg) {
     --notmux {
-        docker run --rm -p ${JPYPORT}:${JPYPORT} -it --mount type=bind,src=${PWD}/home,dst=/home/dev ${MOUNT_CERTS} --name ${HNAME} --hostname ${HNAME} ${IMGNAME}:${LANG}-${VERSION} /bin/zsh    
+        docker run --rm -p ${JPYPORT}:${JPYPORT} -it --mount src=devlabvol,dst=/home/dev ${MOUNT_CERTS} --name ${HNAME} --hostname ${HNAME} ${IMGNAME}:${LANG}-${VERSION} /bin/zsh    
     }
     --jupyter {
         Write-Output "Starting devlab..."    
-        docker run --rm -p ${JPYPORT}:${JPYPORT} -d --mount type=bind,src=${PWD}/home,dst=/home/dev ${MOUNT_CERTS} --name ${HNAME} --hostname localhost ${IMGNAME}:${LANG}-${VERSION} jupyter-lab
-
-	Start-Sleep -Seconds 2
-	
-	docker logs ${HNAME}
-    }
+        docker run --rm -p ${JPYPORT}:${JPYPORT} -d --mount src=devlabvol,dst=/home/dev ${MOUNT_CERTS} --name ${HNAME} --hostname localhost ${IMGNAME}:${LANG}-${VERSION} jupyter-lab        
+    	Start-Sleep -Seconds 2
+    	docker logs ${HNAME}
+        Write-Output 'If the URL for accessing your jupyter notebook is not shown above,'
+        Write-Output 'just use "docker logs devlab" to get it. You may need to use it'
+        Write-Output 'multiple times until you get the URL.'
+        }
     Default {
-        docker run --rm -p ${JPYPORT}:${JPYPORT} -it --mount type=bind,src=${PWD}/home,dst=/home/dev ${MOUNT_CERTS} --name ${HNAME} --hostname ${HNAME} ${IMGNAME}:${LANG}-${VERSION} starttmux
+        docker run --rm -p ${JPYPORT}:${JPYPORT} -it --mount src=devlabvol,dst=/home/dev ${MOUNT_CERTS} --name ${HNAME} --hostname ${HNAME} ${IMGNAME}:${LANG}-${VERSION} starttmux
     }
 }

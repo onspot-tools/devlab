@@ -46,7 +46,7 @@ else
 fi    
 
 # Build parameters
-IMGNAME=arvindds/devlab
+IMGNAME=ramdootin/devlab
 LANG=base
 VERSION=v1
 
@@ -58,7 +58,7 @@ JPYPORT=9000
 # to /opt/certs. This directory contains additional PEM certificates that may be needed to 
 # access the internet when done behind a corporate proxy.
 if [[ -d trustedcerts && "$(ls -A trustedcerts)" ]]; then
-    MOUNT_CERTS="--mount type=bind,src=${PWD}/trustedcerts,dst=/opt/certs"
+    MOUNT_CERTS="--mount type=bind,src=${PWD}/trustedcerts,dst=/opt/certs,ro"
 else
     MOUNT_CERTS=""
 fi
@@ -69,14 +69,17 @@ mkdir -p home
 
 case $progarg in
 "--notmux")
-    docker run --rm -p ${JPYPORT}:${JPYPORT} -it --mount type=bind,src=${PWD}/home,dst=/home/dev ${MOUNT_CERTS} --name ${HNAME} --hostname ${HNAME} ${IMGNAME}:${LANG}-${VERSION} /bin/zsh
+    docker run --rm -p ${JPYPORT}:${JPYPORT} -it --mount src=devlabvol,dst=/home/dev ${MOUNT_CERTS} --name ${HNAME} --hostname ${HNAME} ${IMGNAME}:${LANG}-${VERSION} /bin/zsh
     ;;
 "--jupyter")
     echo "Starting devlab..."
-    docker run --rm -p ${JPYPORT}:${JPYPORT} -d --mount type=bind,src=${PWD}/home,dst=/home/dev ${MOUNT_CERTS} --name ${HNAME} --hostname localhost ${IMGNAME}:${LANG}-${VERSION} jupyter-lab
+    docker run --rm -p ${JPYPORT}:${JPYPORT} -d --mount src=devlabvol,dst=/home/dev ${MOUNT_CERTS} --name ${HNAME} --hostname localhost ${IMGNAME}:${LANG}-${VERSION} jupyter-lab
     sleep 2
     docker logs ${HNAME}
+    echo 'If the URL for accessing your jupyter notebook is not shown above,'
+    echo 'just use "docker logs devlab" to get it. You may need to use it'
+    echo 'multiple times until you get the URL.'
     ;;
 *)
-    docker run --rm -p ${JPYPORT}:${JPYPORT} -it --mount type=bind,src=${PWD}/home,dst=/home/dev ${MOUNT_CERTS} --name ${HNAME} --hostname ${HNAME} ${IMGNAME}:${LANG}-${VERSION} starttmux
+    docker run --rm -p ${JPYPORT}:${JPYPORT} -it --mount src=devlabvol,dst=/home/dev ${MOUNT_CERTS} --name ${HNAME} --hostname ${HNAME} ${IMGNAME}:${LANG}-${VERSION} starttmux
 esac
