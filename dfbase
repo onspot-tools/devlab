@@ -16,9 +16,9 @@
 # See the LICENSE file in the project root for more information.
 #
 
-FROM opensuse/leap:15.2 as base
-LABEL Name="Base Jupyter image"
-LABEL Description="This image is the base for all other images"
+FROM opensuse/leap:15.2
+LABEL Name="Base devlab image"
+LABEL Description="This image is the base for all the other devlabs"
 
 # All zypper commands have a -n for making them non-interactive
 # First, make sure we have the latest repos and updates for
@@ -67,6 +67,10 @@ RUN rm /opt/emacs.tgz
 COPY zsh.zshrc.local /etc/
 ENV PATH=/opt/jupyter/srv/bin:/opt/julia/bin:/opt/scripts:${PATH}
 
+# Create a homesave directory for saving home contents (see explanations below)
+RUN mkdir -p /opt/homesave
+RUN chown -R dev:users /opt/homesave
+
 # Now, install everything else with the user's id
 USER dev
 WORKDIR /home/dev
@@ -78,8 +82,7 @@ WORKDIR /home/dev
     
 # Add node for jupyter lab's extensions
 RUN curl https://nodejs.org/dist/v16.0.0/node-v16.0.0-linux-x64.tar.xz -o /opt/node.tar.xz
-RUN tar xJvf /opt/node.tar.xz -C /opt
-RUN mv /opt/node-v16.0.0-linux-x64 /opt/node
+RUN tar xJvf /opt/node.tar.xz --transform 's@node-v16.0.0-linux-x64@node@' -C /opt
 RUN rm -f /opt/node.tar.xz
 # Touch a file with the version number of node so that it
 # is easy to know the version inside the devlab.
@@ -87,8 +90,7 @@ RUN touch /opt/node/v16.0.0-linux-x64
 
 # Add Julia as a base language (apart from Python3 that is already present)
 RUN curl https://julialang-s3.julialang.org/bin/linux/x64/1.6/julia-1.6.1-linux-x86_64.tar.gz -o /opt/julia.tar.gz
-RUN tar xzvf /opt/julia.tar.gz -C /opt
-RUN mv /opt/julia-1.6.1 /opt/julia
+RUN tar xzvf /opt/julia.tar.gz --transform 's@julia-1.6.1@julia@' -C /opt
 RUN rm -f /opt/julia.tar.gz
 RUN touch /opt/julia/v1.6.1
 
@@ -103,7 +105,6 @@ RUN pip install --target ${JUPYTER_HOME}/srv jupyterlab
 ENV PYTHONPATH=${PYTHONPATH}:/opt/jupyter/srv
 
 # Generate Jupyter configuration for notebooks
-# We will have all notebooks in /opt/jupyter/nb AND
 # We will make jupyter listen on a specific port number.
 # JPYPORT is passed to us as a build-arg
 ARG JPYPORT
@@ -129,13 +130,13 @@ RUN julia -e 'using Pkg; Pkg.add("IJulia");'
 # RUN sed -i "s@.*c.ServerApp.certfile\ .*@c.ServerApp.certfile\ =\ \'/opt/ssl/localhost.crt\'@" ${JUPYTER_CONFIG_DIR}/jupyter_lab_config.py
 # RUN sed -i "s@.*c.ServerApp.keyfile\ .*@c.ServerApp.keyfile\ =\ \'/opt/ssl/localhost.key\'@" ${JUPYTER_CONFIG_DIR}/jupyter_lab_config.py
 # Install Oh-my-zsh
-RUN sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)" "" --keep-zshrc
+# RUN sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)" "" --keep-zshrc
 # ---------------
 # Typical way of using curl/wget from raw github does not work sometimes if github raw access is
 # having a problem. Hence we go another way: clone the github repo, and then execute install from there.
-# RUN git clone https://github.com/ohmyzsh/ohmyzsh.git tmpozsh
-# RUN tmpozsh/tools/install.sh --keep-zshrc
-# RUN rm -rf tmpozsh
+RUN git clone https://github.com/ohmyzsh/ohmyzsh.git tmpozsh
+RUN tmpozsh/tools/install.sh --keep-zshrc
+RUN rm -rf tmpozsh
 # ---------------
 RUN sed -i 's/ZSH_THEME=.*/ZSH_THEME=\"agnoster\"/' ~/.zshrc
 
@@ -145,6 +146,21 @@ RUN if ! grep -q ".zshrc.home.devlab" ~/.zshrc; then echo "# The next line is ad
 
 # Finally, just create a DEVLABLANG
 RUN echo export DEVLABLANG=base-v1 > .envrc
+
+# Move all files in the home directory into a safe location in the container.
+# On startup, we will move back these files into the home directory so that it is possible
+# to mount a host directory into the home location. 
+# By default, if a file exists in a directory inside the container, and the same location is also
+# used for mounting a host-directory, the existing files in the container are not seen (they are overlayed).
+# We therefore use this "move home while build and move them back at the startup" idea to allow for mounting
+# a host directory on the home location.
+# Now, why are we particular to mount a host on the home? Well, this allows for new installations by the
+# user of our devlab in their own home - and since we mount a host on to home, these installations 
+# remain across container sessions as long as the same directory is mounted again on every startup. Some
+# package managers such as pip automatically install their packages in home directories if they are not
+# able to access site-wide locations (due to permissions) - and these scenarios are automatically taken
+# care by our "mount host dir on home" method.
+RUN zsh -c "mv /home/dev/*(DN) /opt/homesave/"
 
 # Default port of the jupyter lab is exposed here
 EXPOSE ${JPYPORT}

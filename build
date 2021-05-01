@@ -12,11 +12,11 @@
 #
 
 # Build parameters
-IMGNAME=devlab
+IMGNAME=arvindds/devlab
 LANG=base
 VERSION=v1
 
 # Run parameters
 JPYPORT=9000
 
-docker build -f dfbase --tag ${IMGNAME}:${LANG}-${VERSION} --build-arg JPYPORT=${JPYPORT} $* --target base . 
+docker build -f dfbase --tag ${IMGNAME}:${LANG}-${VERSION} --build-arg JPYPORT=${JPYPORT} $* . 

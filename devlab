@@ -46,16 +46,13 @@ else
 fi    
 
 # Build parameters
-IMGNAME=devlab
+IMGNAME=arvindds/devlab
 LANG=base
 VERSION=v1
 
 # Run parameters
 HNAME=devlab
 JPYPORT=9000
-
-# All our work gets into work directory
-mkdir -p work
 
 # If we have a "trustedcerts" directory where we are running the devlab, just mount it
 # to /opt/certs. This directory contains additional PEM certificates that may be needed to 
@@ -66,16 +63,20 @@ else
     MOUNT_CERTS=""
 fi
 
+# Just to keep our home directories clean, we'll create a separate
+# directory "home" and mount that as our home directory in devlab
+mkdir -p home
+
 case $progarg in
 "--notmux")
-    docker run --rm -p ${JPYPORT}:${JPYPORT} -it --mount type=bind,src=${PWD}/work,dst=/home/dev/work ${MOUNT_CERTS} --name ${HNAME} --hostname ${HNAME} ${IMGNAME}:${LANG}-${VERSION} /bin/zsh
+    docker run --rm -p ${JPYPORT}:${JPYPORT} -it --mount type=bind,src=${PWD}/home,dst=/home/dev ${MOUNT_CERTS} --name ${HNAME} --hostname ${HNAME} ${IMGNAME}:${LANG}-${VERSION} /bin/zsh
     ;;
 "--jupyter")
     echo "Starting devlab..."
-    docker run --rm -p ${JPYPORT}:${JPYPORT} -d --mount type=bind,src=${PWD}/work,dst=/home/dev/work ${MOUNT_CERTS} --name ${HNAME} --hostname localhost ${IMGNAME}:${LANG}-${VERSION} jupyter-lab
+    docker run --rm -p ${JPYPORT}:${JPYPORT} -d --mount type=bind,src=${PWD}/home,dst=/home/dev ${MOUNT_CERTS} --name ${HNAME} --hostname localhost ${IMGNAME}:${LANG}-${VERSION} jupyter-lab
     sleep 2
     docker logs ${HNAME}
     ;;
 *)
-    docker run --rm -p ${JPYPORT}:${JPYPORT} -it --mount type=bind,src=${PWD}/work,dst=/home/dev/work ${MOUNT_CERTS} --name ${HNAME} --hostname ${HNAME} ${IMGNAME}:${LANG}-${VERSION} starttmux
+    docker run --rm -p ${JPYPORT}:${JPYPORT} -it --mount type=bind,src=${PWD}/home,dst=/home/dev ${MOUNT_CERTS} --name ${HNAME} --hostname ${HNAME} ${IMGNAME}:${LANG}-${VERSION} starttmux
 esac

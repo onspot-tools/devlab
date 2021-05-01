@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/zsh
 
 #
 # Entrypoint for the devlab container.
@@ -20,9 +20,12 @@
 
 set -e
 
-# First, make sure our work directory is writable
-mkdir -p work
-sudo zsh -c 'chown dev:users work'
+# If we do not have a ".homesetup" file, then move all
+# files from homesave into our home directory
+# if [[ ! -f ~/.homesetup ]]; then
+#     cp /opt/homesave/*(DN) ~/
+#     touch ~/.homesetup
+# fi
 
 # Make sure to clear all config files before adding 
 # default configuration in them

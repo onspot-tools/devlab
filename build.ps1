@@ -10,8 +10,8 @@
 # See the LICENSE file in the project root for more information.
 #
 
-$NAME = devlab
+$NAME = arvindds/devlab
 $VERSION = v1
 $JPYPORT = 9000
 
-docker build -f dfbase --tag ${NAME}:${VERSION} --build-arg JPYPORT=${JPYPORT} --target base . 
+docker build -f dfbase --tag ${NAME}:${VERSION} --build-arg JPYPORT=${JPYPORT} . 
