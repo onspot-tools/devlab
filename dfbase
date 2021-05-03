@@ -97,7 +97,7 @@ RUN touch /opt/julia/v1.6.1
 
 # Finish up mitex installation, enabling auto package install
 RUN miktexsetup finish              
-RUN initexmf --set-config-value [MPM]AutoInstall=1
+RUN initexmf --set-config-value "[MPM]AutoInstall=1"
 
 # Install Jupyter in /opt/jupyter
 ENV JUPYTER_HOME=/opt/jupyter
@@ -109,6 +109,11 @@ ENV JUPYTER_NBDIR=${JUPYTER_HOME}/nb
 RUN pip install --target ${JUPYTER_HOME}/srv jupyterlab
 ENV PYTHONPATH=${PYTHONPATH}:/opt/jupyter/srv
 RUN pip install nbconvert[webpdf]
+
+# nbconvert installations do not install the templates at the right place
+# We install them in the right place now.
+RUN mkdir -p ${JUPYTER_HOME}/data/nbconvert/templates/
+RUN mv ${JUPYTER_HOME}/srv/share/jupyter/nbconvert/templates/* ${JUPYTER_HOME}/data/nbconvert/templates/
 
 # Generate Jupyter configuration for notebooks
 # We will make jupyter listen on a specific port number.
