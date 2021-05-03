@@ -3,6 +3,22 @@ devlab is a way to quickly set up development environments for various languages
 
 This project contains the Docker files for building devlab and all the associated scripts (both for Linux and for Powershell).
 
+# Getting pre-built docker images of devlab
+Get get pre-built docker images with:
+
+    docker pull ramdootin/devlab:<tag-name>
+
+For example, to get the base docker image that contains Python and Julia development environments, along with Jupyter to spice-it-all up, just do:
+
+    docker pull ramdootin/devlab:base-v1
+
+The best way to run the docker images is by using the `devlav` script. Depending on whether you are using Linux or Windows machine for working on docker, download just these scripts in an empty directory, and follow the instructions in the rest of this readme to use devlab.
+
+devlab script for use in linux or Windows-Subsytem-for-Linux (WSL) - [https://raw.githubusercontent.com/ramdootin/devlab/master/devlab](click here)
+devlab.ps script for used in Powershell (Windows or Linux): [https://raw.githubusercontent.com/ramdootin/devlab/master/devlab.ps1](click here)
+
+For more adventurous, clone this entire git repo and use these scripts found in the root-directory. You can later use this repo for also extending devlab with your own dev-environments (see the instructions below).
+
 # Starting devlab
 The devlab can be started with any of the following options:
 
