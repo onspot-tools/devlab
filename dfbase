@@ -23,12 +23,17 @@ LABEL Description="This image is the base for all the other devlabs"
 # All zypper commands have a -n for making them non-interactive
 # First, make sure we have the latest repos and updates for
 # all the packages installed.
-# We also install the timezone package to first set the
-# time zone, and our versatile vim
+# Since we will have miktex, we need to install the gpg keys
 RUN zypper -n refresh && zypper -n update && \
     zypper -n install timezone neovim zsh \
               iputils unzip tar gzip bzip2 xz which iproute2 \
               sudo wget curl git tmux direnv python3 python3-pip
+
+# Install miktex for use with Jupyter.
+# This is required for converting jupyter notebooks to pdf.
+RUN sudo rpm --import "https://keyserver.ubuntu.com/pks/lookup?op=get&search=0xD6BC243565B2087BC3F897C9277A7293F59E4889"
+RUN sudo curl -L -o /etc/zypp/repos.d/miktex.repo https://miktex.org/download/opensuse/15/miktex.repo
+RUN zypper update && zypper -n install pandoc miktex
 
 # Make sure that dates are correct within the container
 RUN rm -f /etc/localtime /etc/localtime.rpmsave
@@ -38,6 +43,7 @@ RUN ln -s /usr/share/zoneinfo/Asia/Kolkata /etc/localtime
 RUN mkdir -p /etc/skel/.config/pip/
 COPY pip.conf /etc/skel/.config/pip/
 COPY tmux.conf /etc/skel/.tmux.conf
+RUN mkdir -p /etc/skel/bin
 RUN echo "(setq make-backup-files nil)" > /etc/skel/.emacs
 
 # Special care for root, because this is created even before skel existed
@@ -64,11 +70,7 @@ RUN rm /opt/emacs.tgz
 
 # Some common aliases and functions to be added into /etc/zsh.zshrc.local
 COPY zsh.zshrc.local /etc/
-ENV PATH=/opt/jupyter/srv/bin:/opt/julia/bin:/opt/scripts:${PATH}
-
-# Create a homesave directory for saving home contents (see explanations below)
-RUN mkdir -p /opt/homesave
-RUN chown -R dev:users /opt/homesave
+ENV PATH=/opt/jupyter/srv/bin:/opt/julia/bin:/opt/scripts:/home/dev/bin:${PATH}
 
 # Now, install everything else with the user's id
 USER dev
@@ -93,6 +95,10 @@ RUN tar xzvf /opt/julia.tar.gz --transform 's@julia-1.6.1@julia@' -C /opt
 RUN rm -f /opt/julia.tar.gz
 RUN touch /opt/julia/v1.6.1
 
+# Finish up mitex installation, enabling auto package install
+RUN miktexsetup finish              
+RUN initexmf --set-config-value [MPM]AutoInstall=1
+
 # Install Jupyter in /opt/jupyter
 ENV JUPYTER_HOME=/opt/jupyter
 ENV JUPYTER_CONFIG_DIR=${JUPYTER_HOME}/config
@@ -102,6 +108,7 @@ ENV JUPYTERLAB_WORKSPACES_DIR=${JUPYTER_HOME}/workspaces
 ENV JUPYTER_NBDIR=${JUPYTER_HOME}/nb
 RUN pip install --target ${JUPYTER_HOME}/srv jupyterlab
 ENV PYTHONPATH=${PYTHONPATH}:/opt/jupyter/srv
+RUN pip install nbconvert[webpdf]
 
 # Generate Jupyter configuration for notebooks
 # We will make jupyter listen on a specific port number.
