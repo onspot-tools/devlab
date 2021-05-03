@@ -156,7 +156,7 @@ COPY zshrc.home.devlab ./.zshrc.home.devlab
 RUN if ! grep -q ".zshrc.home.devlab" ~/.zshrc; then echo "# The next line is added by devlab; DO NOT REMOVE IT!"; echo ". ~/.zshrc.home.devlab" >> ~/.zshrc; fi
 
 # Finally, just create a DEVLABLANG
-RUN echo export DEVLABLANG=base-v1 > .envrc
+ENV DEVLABLANG=base-v1
 
 # Finally, declare the home-directory as a volume so that all installs in the home directoru
 # and all work within the home-directory by the users remain there permantly.
