@@ -1,0 +1,33 @@
+# -*- mode: dockerfile -*-
+# Haskell dockerfile
+#
+# This dockerfile creates the haskell image. It derives from the base.
+#
+# Author: arvindd
+# Created: 03.May.2021
+#
+# Copyright (c) 2021 Arvind Devarajan
+# Licensed to you under the MIT License.
+# See the LICENSE file in the project root for more information.
+#
+FROM ramdootin/devlab:base-v1
+
+USER root 
+
+# ca cert from its own site and use that.
+RUN wget http://curl.haxx.se/ca/cacert.pem -O /etc/pki/trust/anchors/cacert.pem
+RUN update-ca-certificates
+
+USER dev
+WORKDIR /home/dev
+
+# First, install all dependencies
+RUN zypper -n install gcc-c++ gcc gmp-devel make ncurses-devel 
+
+# Install GHCUP non-interactively
+ENV BOOTSTRAP_HASKELL_NONINTERACTIVE=1
+ENV BOOTSTRAP_HASKELL_GHC_VERSION=8.10.4
+RUN curl --proto '=https' --tlsv1.2 -sSf https://get-ghcup.haskell.org | sh
+
+# Finally, adjust the path to include ghc binary locations too
+ENV PATH=/home/dev/.ghcup/bin:${PATH}

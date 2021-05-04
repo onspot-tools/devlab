@@ -1,0 +1,85 @@
+#!/bin/bash
+
+#
+# Starts the base image for use as a shell.
+#
+# Author: arvindd
+# Created: 21.Apr.2021
+#
+# Copyright (c) 2021 Arvind Devarajan
+# Licensed to you under the MIT License.
+# See the LICENSE file in the project root for more information.
+#
+
+###################################################
+# 
+###################################################
+
+# First, check if we have an argument. 
+if [[ $# -ne 1 ]]; then
+    progarg="tmux" 
+else 
+    progarg=$1
+fi
+
+# First, check if we are already running the devlab
+docker ps --filter "name=devlab" | tail -1 | grep -q devlab
+if [[ $? -eq 0 ]]; then
+    # devlab is already running; so either stop it or 
+    # ask the user to stop it.
+    if [[ $progarg == "--stop" ]]; then
+        echo "Stopped"
+        docker stop devlab
+        exit 0
+    else
+        echo "devlab is already running."
+        echo "Stop it with 'devlab --stop' before starting again."
+        exit 1
+    fi
+else
+    # devlab is not running. We will not accept '--stop' as an argument
+    # because, well, you cannot stop a stopped devlab :-)    
+    if [[ $progarg == "--stop" ]]; then
+        echo "devlab is not running. Refusing to stop a stopped devlab."
+        exit 1
+    fi    
+fi    
+
+# Build parameters
+IMGNAME=ramdootin/devlab
+LANG=haskell
+VERSION=v8.10.4
+
+# Run parameters
+HNAME=devlab
+JPYPORT=9000
+
+# If we have a "trustedcerts" directory where we are running the devlab, just mount it
+# to /opt/certs. This directory contains additional PEM certificates that may be needed to 
+# access the internet when done behind a corporate proxy.
+if [[ -d trustedcerts && "$(ls -A trustedcerts)" ]]; then
+    MOUNT_CERTS="--mount type=bind,src=${PWD}/trustedcerts,dst=/opt/certs,ro"
+else
+    MOUNT_CERTS=""
+fi
+
+# Just to keep our home directories clean, we'll create a separate
+# directory "home" and mount that as our home directory in devlab
+mkdir -p home
+
+case $progarg in
+"--notmux")
+    docker run --rm -p ${JPYPORT}:${JPYPORT} -it --mount src=devlabvol,dst=/home/dev ${MOUNT_CERTS} --name ${HNAME} --hostname ${HNAME} ${IMGNAME}:${LANG}-${VERSION} /bin/zsh
+    ;;
+"--jupyter")
+    echo "Starting devlab..."
+    docker run --rm -p ${JPYPORT}:${JPYPORT} -d --mount src=devlabvol,dst=/home/dev ${MOUNT_CERTS} --name ${HNAME} --hostname localhost ${IMGNAME}:${LANG}-${VERSION} jupyter-lab
+    sleep 2
+    docker logs ${HNAME}
+    echo 'If the URL for accessing your jupyter notebook is not shown above,'
+    echo 'just use "docker logs devlab" to get it. You may need to use it'
+    echo 'multiple times until you get the URL.'
+    ;;
+*)
+    docker run --rm -p ${JPYPORT}:${JPYPORT} -it --mount src=devlabvol,dst=/home/dev ${MOUNT_CERTS} --name ${HNAME} --hostname ${HNAME} ${IMGNAME}:${LANG}-${VERSION} starttmux
+esac

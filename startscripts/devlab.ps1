@@ -20,8 +20,7 @@ else {
 }
 
 # First, check if we are already running the devlab
-$cnt = docker ps --filter name=pgadmin | 
-docker ps --filter "name=devlab" | Measure-Object -line
+$cnt = docker ps --filter "name=devlab" | Measure-Object -line
 if ( $cnt.Lines -eq 2 ) {
     # devlab is already running; so either stop it or 
     # ask the user to stop it.

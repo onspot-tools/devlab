@@ -22,10 +22,9 @@ set -e
 
 # Make sure to clear all config files before adding 
 # default configuration in them
+cat /dev/null > ~/.envrc
 cat /dev/null > ~/.wgetrc
 cat /dev/null > ~/.curlrc
-sudo zsh -c 'cat /dev/null > /root/.wgetrc'
-sudo zsh -c 'cat /dev/null > /root/.curlrc'
 
 # If we have mounted a /opt/certs directory, then, we
 # have some certificates to be installed.
@@ -35,12 +34,12 @@ if [[ -d /opt/certs ]]; then
     sudo zsh -c "cp /opt/certs/* /etc/pki/trust/anchors"
     sudo zsh -c "update-ca-certificates"
 
-    # Now, add this directory as trusted CA store for both
-    # wget and curl. This helps in their use without a problem.
-    echo "ca_directory=/opt/certs" >> ~/.wgetrc
-    sudo zsh -c 'echo "ca_directory=/opt/certs" >> /root/.wgetrc'
-    echo "capath=/opt/certs" >> ~/.curlrc
-    sudo zsh -c 'echo "capath=/opt/certs" >> /root/.curlrc'    
+    # # Now, add this directory as trusted CA store for both
+    # # wget and curl. This helps in their use without a problem.
+    # echo "ca_directory=/opt/certs" >> ~/.wgetrc
+    # sudo zsh -c 'echo "ca_directory=/opt/certs" >> /root/.wgetrc'
+    # echo "capath=/opt/certs" >> ~/.curlrc
+    # sudo zsh -c 'echo "capath=/opt/certs" >> /root/.curlrc'    
 fi 
 
 # If we have http_proxy variables, add this information in
@@ -60,15 +59,28 @@ fi
 
 # Make sure to define all proxy environment variables
 if [[ !(-z $http) || !(-z $https) ]]; then
-    echo "export http_proxy=$http" > ~/.envrc
+    # General environment variables with proxy
+    echo "export http_proxy=$http" >> ~/.envrc
     echo "export https_proxy=$https" >> ~/.envrc
     echo "export no_proxy=localhost" >> ~/.envrc    
     echo "export HTTP_PROXY=$http" >> ~/.envrc
     echo "export HTTPS_PROXY=$https" >> ~/.envrc
     echo "export NO_PROXY=localhost" >> ~/.envrc    
 
+    # Proxy configurations for wget and curl
     echo "use_proxy=on" >> ~/.wgetrc
-    sudo zsh -c 'echo "use_proxy=on" >> /root/.wgetrc'
+    echo "http_proxy=$http_proxy" >> ~/.wgetrc
+    echo "https_proxy=$https_proxy" >> ~/.wgetrc
+    echo "proxy=$http_proxy" >> ~/.curlrc
+
+    # Copy all of these in root's home too
+    sudo zsh -c "cp .envrc .wgetrc .curlrc /root/"
+
+    # Finally, adjust the proxy variables for system-wide proxy
+    # usage. Some of the tools like curl like to use that
+    sudo zsh -c "sed -i 's/PROXY_ENABLED=.\*/PROXY_ENABLED=\"yes\"/' /etc/sysconfig/proxy"
+    sudo zsh -c "sed -i 's/HTTP_PROXY=.\*/HTTP_PROXY=\"$http_proxy\"/' /etc/sysconfig/proxy"    
+    sudo zsh -c "sed -i 's/HTTPS_PROXY=.\*/HTTPS_PROXY=\"$https_proxy\"/' /etc/sysconfig/proxy"        
 fi
 
 exec "$@"

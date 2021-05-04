@@ -4,9 +4,7 @@
 # This dockerfile is to build the basic opensuse/leap image based on which
 # all the other application images will be built.
 #
-# To build a docker image based on this file, use:
-#
-# docker build --tag devlab/base:v1 --target base .
+# To build all images, use the build script: `build` in this directory.
 #
 # Author: arvindd
 # Created: 21.Apr.2021
