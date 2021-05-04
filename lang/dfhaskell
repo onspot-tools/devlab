@@ -18,11 +18,11 @@ USER root
 RUN wget http://curl.haxx.se/ca/cacert.pem -O /etc/pki/trust/anchors/cacert.pem
 RUN update-ca-certificates
 
-USER dev
-WORKDIR /home/dev
-
 # First, install all dependencies
 RUN zypper -n install gcc-c++ gcc gmp-devel make ncurses-devel 
+
+USER dev
+WORKDIR /home/dev
 
 # Install GHCUP non-interactively
 ENV BOOTSTRAP_HASKELL_NONINTERACTIVE=1

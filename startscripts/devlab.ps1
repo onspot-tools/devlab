@@ -24,19 +24,19 @@ $cnt = docker ps --filter "name=devlab" | Measure-Object -line
 if ( $cnt.Lines -eq 2 ) {
     # devlab is already running; so either stop it or 
     # ask the user to stop it.
-    if ( $progarg -eq "--stop" ) {
+    if ( $progarg -eq "stop" ) {
         Write-Output "Stopped"
         docker stop devlab
         exit 0
     } else {
         Write-Output "devlab is already running."
-        Write-Output "Stop it with 'devlab --stop' before starting again."
+        Write-Output "Stop it with 'devlab stop' before starting again."
         exit 1
     }
 } else {
     # devlab is not running. We will not accept '--stop' as an argument
     # because, well, you cannot stop a stopped devlab :-)    
-    if ( $progarg -eq "--stop" ) {
+    if ( $progarg -eq "stop" ) {
         Write-Output "devlab is not running. Refusing to stop a stopped devlab."
         exit 1
     }
@@ -62,10 +62,10 @@ if ( Test-Path trustedcerts/* ) {
 }
 
 switch ($progarg) {
-    --notmux {
+    notmux {
         docker run --rm -p ${JPYPORT}:${JPYPORT} -it --mount src=devlabvol,dst=/home/dev ${MOUNT_CERTS} --name ${HNAME} --hostname ${HNAME} ${IMGNAME}:${LANG}-${VERSION} /bin/zsh    
     }
-    --jupyter {
+    jupyter {
         Write-Output "Starting devlab..."    
         docker run --rm -p ${JPYPORT}:${JPYPORT} -d --mount src=devlabvol,dst=/home/dev ${MOUNT_CERTS} --name ${HNAME} --hostname localhost ${IMGNAME}:${LANG}-${VERSION} jupyter-lab        
     	Start-Sleep -Seconds 2

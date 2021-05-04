@@ -27,19 +27,19 @@ docker ps --filter "name=devlab" | tail -1 | grep -q devlab
 if [[ $? -eq 0 ]]; then
     # devlab is already running; so either stop it or 
     # ask the user to stop it.
-    if [[ $progarg == "--stop" ]]; then
+    if [[ $progarg == "stop" ]]; then
         echo "Stopped"
         docker stop devlab
         exit 0
     else
         echo "devlab is already running."
-        echo "Stop it with 'devlab --stop' before starting again."
+        echo "Stop it with 'devlab stop' before starting again."
         exit 1
     fi
 else
     # devlab is not running. We will not accept '--stop' as an argument
     # because, well, you cannot stop a stopped devlab :-)    
-    if [[ $progarg == "--stop" ]]; then
+    if [[ $progarg == "stop" ]]; then
         echo "devlab is not running. Refusing to stop a stopped devlab."
         exit 1
     fi    
@@ -64,10 +64,10 @@ else
 fi
 
 case $progarg in
-"--notmux")
+"notmux")
     docker run --rm -p ${JPYPORT}:${JPYPORT} -it --mount src=devlabvol,dst=/home/dev ${MOUNT_CERTS} --name ${HNAME} --hostname ${HNAME} ${IMGNAME}:${LANG}-${VERSION} /bin/zsh
     ;;
-"--jupyter")
+"jupyter")
     echo "Starting devlab..."
     docker run --rm -p ${JPYPORT}:${JPYPORT} -d --mount src=devlabvol,dst=/home/dev ${MOUNT_CERTS} --name ${HNAME} --hostname localhost ${IMGNAME}:${LANG}-${VERSION} jupyter-lab
     sleep 2
