@@ -63,10 +63,6 @@ else
     MOUNT_CERTS=""
 fi
 
-# Just to keep our home directories clean, we'll create a separate
-# directory "home" and mount that as our home directory in devlab
-mkdir -p home
-
 case $progarg in
 "--notmux")
     docker run --rm -p ${JPYPORT}:${JPYPORT} -it --mount src=devlabvol,dst=/home/dev ${MOUNT_CERTS} --name ${HNAME} --hostname ${HNAME} ${IMGNAME}:${LANG}-${VERSION} /bin/zsh
