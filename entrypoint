@@ -44,21 +44,21 @@ fi
 
 # If we have http_proxy variables, add this information in
 # all the utility config files
-if [[ !(-z $HTTP_PROXY) ]]; then
+if [[ -n "$HTTP_PROXY" ]]; then
     http=$HTTP_PROXY
-elif [[ !(-z $http_proxy) ]]; then
+elif [[ -n "$http_proxy" ]]; then
     http=$http_proxy
 fi
 
 # Same with https variables...
-if [[ !(-z $HTTPS_PROXY) ]]; then
+if [[ -n "$HTTPS_PROXY" ]]; then
     https=$HTTPS_PROXY
-elif [[ !(-z $https_proxy) ]]; then
+elif [[ -n "$https_proxy" ]]; then
     https=$https_proxy
 fi
 
 # Make sure to define all proxy environment variables
-if [[ !(-z $http) || !(-z $https) ]]; then
+if [[ -n "$http" || -n "$https" ]]; then
     # General environment variables with proxy
     echo "export http_proxy=$http" >> ~/.envrc
     echo "export https_proxy=$https" >> ~/.envrc
