@@ -21,6 +21,9 @@ RUN update-ca-certificates
 # First, install all dependencies
 RUN zypper -n install gcc-c++ gcc gmp-devel make ncurses-devel 
 
+# Update path to include ghcup binaries
+RUN echo "pupdate ~/.ghcup/bin" >> /etc/zsh.zshrc.local
+
 USER dev
 WORKDIR /home/dev
 
@@ -30,4 +33,3 @@ ENV BOOTSTRAP_HASKELL_GHC_VERSION=8.10.4
 RUN curl --proto '=https' --tlsv1.2 -sSf https://get-ghcup.haskell.org | sh
 
 # Finally, adjust the path to include ghc binary locations too
-ENV PATH=/home/dev/.ghcup/bin:${PATH}

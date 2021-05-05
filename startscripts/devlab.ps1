@@ -2,6 +2,20 @@
 
 # Starts the base image for use as a shell.
 #
+# The latest version of this script is available at:
+#
+# https://raw.githubusercontent.com/ramdootin/devlab/master/startscripts/devlab.ps1
+#
+# If you already have devlab with you, the script is also in there:
+#
+# docker cp devlab:/opt/scripts/devlab.ps1 .
+#
+# will get this script out from a running devlab. Note that the
+# script got from your devlab might not be the latest one published
+# unless you have also pulled the latest devlab from dockerhub:
+#
+# docker pull ramdootin/devlab:<lang>-<version>
+#
 # Author: arvindd
 # Created: 21.Apr.2021
 #

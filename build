@@ -52,4 +52,4 @@ echo "Image name: ${IMGNAME}"
 echo "Language: ${LANG}"
 echo "Language version: ${VERSION}"
 
-docker build -f ${DOCKERFILE} --tag ${IMGNAME}:${LANG}-${VERSION} --build-arg JPYPORT=${JPYPORT} . 
+docker build -f ${DOCKERFILE} --tag ${IMGNAME}:${LANG}-${VERSION} --build-arg JPYPORT=${JPYPORT} --build-arg LANG=${LANG} --build-arg VER=${VERSION} .

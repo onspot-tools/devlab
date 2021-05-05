@@ -38,4 +38,5 @@ Write-Output "Image name: ${IMGNAME}"
 Write-Output "Language: ${LANG}"
 Write-Output "Language version: ${VERSION}"
 
-docker build -f dfbase --tag ${IMGNAME}:${LANG}-${VERSION} --build-arg JPYPORT=${JPYPORT} .
+docker build -f ${DOCKERFILE} --tag ${IMGNAME}:${LANG}-${VERSION} --build-arg JPYPORT=${JPYPORT} --build-arg LANG=${LANG} --build-arg VER=${VERSION} .
+

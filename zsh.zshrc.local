@@ -1,5 +1,3 @@
-# BEGIN: ADDED BY DEVLAB -*- mode: zsh -*- 
-
 # Function to cleanly add some directory to the PATH variable
 pupdate() 
 { 
@@ -39,5 +37,3 @@ alias vim=nvim
 alias rm='rm -i'
 alias cp='cp -i'
 alias mv='mv -i'
-
-# END: DEVLAB

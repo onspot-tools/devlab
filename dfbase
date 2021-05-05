@@ -153,8 +153,10 @@ RUN sed -i 's/ZSH_THEME=.*/ZSH_THEME=\"agnoster\"/' ~/.zshrc
 COPY zshrc.home.devlab ./.zshrc.home.devlab
 RUN if ! grep -q ".zshrc.home.devlab" ~/.zshrc; then echo "# The next line is added by devlab; DO NOT REMOVE IT!"; echo ". ~/.zshrc.home.devlab" >> ~/.zshrc; fi
 
-# Finally, just create a DEVLABLANG
-ENV DEVLABLANG=base-v1
+# Create these variables so that programs running inside the containers know
+# what language they can make use of.
+ENV DEVLABLANG=${LANG}
+ENV DEVLABVER=${VER}
 
 # Finally, declare the home-directory as a volume so that all installs in the home directoru
 # and all work within the home-directory by the users remain there permantly.
@@ -162,5 +164,5 @@ VOLUME /home/dev
 
 EXPOSE ${JPYPORT}
 RUN mkdir -p /opt/scripts
-COPY ["starttmux", "entrypoint", "/opt/scripts/"]
+COPY ["starttmux", "entrypoint", "startscripts/", "/opt/scripts/"]
 ENTRYPOINT [ "/opt/scripts/entrypoint" ]
