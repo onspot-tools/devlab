@@ -10,8 +10,32 @@
 # See the LICENSE file in the project root for more information.
 #
 
-$NAME = "ramdootin/devlab"
-$VERSION = "v1"
+# First, collect all options
+[CmdletBinding()]
+Param(
+  [Parameter()]
+  [String]$l = "base",
+  [String]$v = "v1",
+)
+
+# Build parameters
+$IMGNAME = "ramdootin/devlab"
+$LANG = "$l"
+$VERSION = "$v"
+
+# Run parameters
 $JPYPORT = 9000
 
-docker build -f dfbase --tag ${NAME}:${VERSION} --build-arg JPYPORT=${JPYPORT} . 
+if ( $LANG -eq "base" ) {
+    $DOCKERFILE = "dfbase"
+} else {
+    $DOCKERFILE = "lang/df$LANG"
+}
+
+Write-Output "Build parameters:"
+Write-Output "Dockerfile: ${DOCKERFILE}"
+Write-Output "Image name: ${IMGNAME}"
+Write-Output "Language: ${LANG}"
+Write-Output "Language version: ${VERSION}"
+
+docker build -f dfbase --tag ${IMGNAME}:${LANG}-${VERSION} --build-arg JPYPORT=${JPYPORT} .

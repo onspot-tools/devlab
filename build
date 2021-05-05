@@ -11,12 +11,45 @@
 # See the LICENSE file in the project root for more information.
 #
 
+# First, collect all options
+while getopts "l:v:" opt; do
+    case ${opt} in
+        l)
+            lang=${OPTARG}
+            ;;
+        v)
+            ver=${OPTARG}
+            ;;
+        *)
+            echo "Usage: `echo $0 | sed 's/\.\///'` [-l <lang>] [command]"
+            exit -1
+            ;;
+    esac
+done
+shift $(expr $OPTIND - 1 )
+
+# Fix all default arguments
+lang=${lang:=base}
+ver=${ver:=v1}
+
 # Build parameters
 IMGNAME=ramdootin/devlab
-LANG=base
-VERSION=v1
+LANG=$lang
+VERSION=$ver
 
 # Run parameters
 JPYPORT=9000
 
-docker build -f dfbase --tag ${IMGNAME}:${LANG}-${VERSION} --build-arg JPYPORT=${JPYPORT} $* . 
+if [[ $LANG == "base" ]]; then
+    DOCKERFILE=dfbase
+else
+    DOCKERFILE=lang/df$LANG
+fi
+
+echo "Build parameters:"
+echo "Dockerfile: ${DOCKERFILE}"
+echo "Image name: ${IMGNAME}"
+echo "Language: ${LANG}"
+echo "Language version: ${VERSION}"
+
+docker build -f ${DOCKERFILE} --tag ${IMGNAME}:${LANG}-${VERSION} --build-arg JPYPORT=${JPYPORT} . 
