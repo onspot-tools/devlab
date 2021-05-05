@@ -10,14 +10,15 @@
 # See the LICENSE file in the project root for more information.
 #
 
-# First, check if we have an argument. 
-if ($args.Count -ne 1) {
-    # No arguments, so we we assume local.
-    $progarg = "tmux"
-} 
-else {
-    $progarg = $args[0]
-}
+# First, collect all options
+[CmdletBinding()]
+Param(
+  [Parameter()]
+  [String]$l = "base",
+  [String]$v = "v1",
+  [Parameter(Position = 0, ValueFromRemainingArguments = $true)]
+  [String]$progarg = "tmux"
+)
 
 # First, check if we are already running the devlab
 $cnt = docker ps --filter "name=devlab" | Measure-Object -line
@@ -44,12 +45,11 @@ if ( $cnt.Lines -eq 2 ) {
 
 # Build parameters
 $IMGNAME = "ramdootin/devlab"
-$LANG = "base"
-$VERSION = "v1"
+$LANG = "$l"
+$VERSION = "$v"
 
 # Run parameters
 $HNAME = "devlab"
-$JPYPORT = 9000
 $JPYPORT = 9000
 
 # If we have a "trustedcerts" directory where we are running the devlab, just mount it

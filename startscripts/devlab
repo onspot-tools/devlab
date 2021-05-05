@@ -15,14 +15,30 @@
 # 
 ###################################################
 
-# First, check if we have an argument. 
-if [[ $# -ne 1 ]]; then
-    progarg="tmux" 
-else 
-    progarg=$1
-fi
+# First, collect all options
+while getopts "l:v:" opt; do
+    case ${opt} in
+        l)
+            lang=${OPTARG}
+            ;;
+        v)
+            ver=${OPTARG}
+            ;;
+        *)
+            echo "Usage: `echo $0 | sed 's/\.\///'` [-l <lang>] [command]"
+            exit -1
+            ;;
+    esac
+done
+shift $(expr $OPTIND - 1 )
 
-# First, check if we are already running the devlab
+# Fix all default arguments
+progarg=$1
+progarg=${progarg:=tmux}
+lang=${lang:=base}
+ver=${ver:=v1}
+
+# Check if we are already running the devlab
 docker ps --filter "name=devlab" | tail -1 | grep -q devlab
 if [[ $? -eq 0 ]]; then
     # devlab is already running; so either stop it or 
@@ -47,8 +63,8 @@ fi
 
 # Build parameters
 IMGNAME=ramdootin/devlab
-LANG=base
-VERSION=v1
+LANG=$lang
+VERSION=$ver
 
 # Run parameters
 HNAME=devlab
