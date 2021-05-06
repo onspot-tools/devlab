@@ -14,12 +14,9 @@ FROM ramdootin/devlab:base-v1
 
 USER root 
 
-# ca cert from its own site and use that.
-RUN wget http://curl.haxx.se/ca/cacert.pem -O /etc/pki/trust/anchors/cacert.pem
-RUN update-ca-certificates
-
-# First, install all dependencies
-RUN zypper -n install gcc-c++ gcc gmp-devel make ncurses-devel 
+# Install ca certificates from curl's site itself, and also all dependencies
+RUN wget http://curl.haxx.se/ca/cacert.pem -O /etc/pki/trust/anchors/cacert.pem && \
+    update-ca-certificates && zypper -n install gcc-c++ gcc gmp-devel make ncurses-devel 
 
 # Update path to include ghcup binaries
 RUN echo "pupdate ~/.ghcup/bin" >> /etc/zsh.zshrc.local
@@ -31,6 +28,3 @@ WORKDIR /home/dev
 ENV BOOTSTRAP_HASKELL_NONINTERACTIVE=1
 ENV BOOTSTRAP_HASKELL_GHC_VERSION=8.10.4
 RUN curl --proto '=https' --tlsv1.2 -sSf https://get-ghcup.haskell.org | sh
-
-# Finallly, mount home dir as a volume
-VOLUME /home/dev

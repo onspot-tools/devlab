@@ -77,11 +77,11 @@ if ( Test-Path trustedcerts/* ) {
 
 switch ($progarg) {
     notmux {
-        docker run --rm -p ${JPYPORT}:${JPYPORT} -it --mount src=devlabvol,dst=/home/dev ${MOUNT_CERTS} --name ${HNAME} --hostname ${HNAME} ${IMGNAME}:${LANG}-${VERSION} /bin/zsh    
+        docker run --rm -p ${JPYPORT}:${JPYPORT} -it --mount src=devlab-${LANG}-${VERSION},dst=/home/dev ${MOUNT_CERTS} --name ${HNAME} --hostname ${HNAME} ${IMGNAME}:${LANG}-${VERSION} /bin/zsh    
     }
     jupyter {
         Write-Output "Starting devlab..."    
-        docker run --rm -p ${JPYPORT}:${JPYPORT} -d --mount src=devlabvol,dst=/home/dev ${MOUNT_CERTS} --name ${HNAME} --hostname localhost ${IMGNAME}:${LANG}-${VERSION} jupyter-lab        
+        docker run --rm -p ${JPYPORT}:${JPYPORT} -d --mount src=devlab-${LANG}-${VERSION},dst=/home/dev ${MOUNT_CERTS} --name ${HNAME} --hostname localhost ${IMGNAME}:${LANG}-${VERSION} jupyter-lab        
     	Start-Sleep -Seconds 2
     	docker logs ${HNAME}
         Write-Output 'If the URL for accessing your jupyter notebook is not shown above,'
@@ -89,6 +89,6 @@ switch ($progarg) {
         Write-Output 'multiple times until you get the URL.'
         }
     Default {
-        docker run --rm -p ${JPYPORT}:${JPYPORT} -it --mount src=devlabvol,dst=/home/dev ${MOUNT_CERTS} --name ${HNAME} --hostname ${HNAME} ${IMGNAME}:${LANG}-${VERSION} starttmux
+        docker run --rm -p ${JPYPORT}:${JPYPORT} -it --mount src=devlab-${LANG}-${VERSION},dst=/home/dev ${MOUNT_CERTS} --name ${HNAME} --hostname ${HNAME} ${IMGNAME}:${LANG}-${VERSION} starttmux
     }
 }

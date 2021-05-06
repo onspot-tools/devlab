@@ -25,17 +25,13 @@ LABEL Description="This image is the base for all the other devlabs"
 RUN zypper -n refresh && zypper -n update && \
     zypper -n install timezone neovim zsh \
               iputils unzip tar gzip bzip2 xz which iproute2 \
-              sudo wget curl git tmux direnv python3 python3-pip
-
-# Install miktex for use with Jupyter.
-# This is required for converting jupyter notebooks to pdf.
-RUN sudo rpm --import "https://keyserver.ubuntu.com/pks/lookup?op=get&search=0xD6BC243565B2087BC3F897C9277A7293F59E4889"
-RUN sudo curl -L -o /etc/zypp/repos.d/miktex.repo https://miktex.org/download/opensuse/15/miktex.repo
-RUN zypper update && zypper -n install pandoc miktex
+              sudo wget curl git tmux direnv python3 python3-pip && \
+              rpm --import "https://keyserver.ubuntu.com/pks/lookup?op=get&search=0xD6BC243565B2087BC3F897C9277A7293F59E4889" && \
+              curl -L -o /etc/zypp/repos.d/miktex.repo https://miktex.org/download/opensuse/15/miktex.repo && \
+              zypper -n install pandoc miktex
 
 # Make sure that dates are correct within the container
-RUN rm -f /etc/localtime /etc/localtime.rpmsave
-RUN ln -s /usr/share/zoneinfo/Asia/Kolkata /etc/localtime
+RUN rm -f /etc/localtime /etc/localtime.rpmsave && ln -s /usr/share/zoneinfo/Asia/Kolkata /etc/localtime
 
 # Add all skel files so that any users created will get them
 RUN mkdir -p /etc/skel/.config/pip/
@@ -55,16 +51,14 @@ RUN useradd -s /bin/zsh -m -d /home/dev dev
 RUN echo "dev ALL=(ALL) NOPASSWD:SETENV: /usr/bin/zypper,/bin/zsh" > /etc/sudoers.d/90_dev
 
 # All our global applications go here
-RUN mkdir -p /opt
-RUN chown dev:users /opt
+RUN mkdir -p /opt && chown dev:users /opt
 
 # Get the latest pip
 RUN /usr/bin/python3 -m pip install --upgrade pip
 
 # Copy and extract emacs 27.1
 COPY emacs.tgz /opt/
-RUN tar xzvf /opt/emacs.tgz
-RUN rm /opt/emacs.tgz
+RUN tar xzvf /opt/emacs.tgz && rm /opt/emacs.tgz
 
 # Some common aliases and functions to be added into /etc/zsh.zshrc.local
 COPY zsh.zshrc.local /etc/
@@ -80,22 +74,21 @@ WORKDIR /home/dev
 # its sub-directories.
     
 # Add node for jupyter lab's extensions
-RUN curl https://nodejs.org/dist/v16.0.0/node-v16.0.0-linux-x64.tar.xz -o /opt/node.tar.xz
-RUN tar xJvf /opt/node.tar.xz --transform 's@node-v16.0.0-linux-x64@node@' -C /opt
-RUN rm -f /opt/node.tar.xz
+RUN curl https://nodejs.org/dist/v16.0.0/node-v16.0.0-linux-x64.tar.xz -o /opt/node.tar.xz && \ 
+    tar xJvf /opt/node.tar.xz --transform 's@node-v16.0.0-linux-x64@node@' -C /opt && \
+    rm -f /opt/node.tar.xz
+
 # Touch a file with the version number of node so that it
 # is easy to know the version inside the devlab.
 RUN touch /opt/node/v16.0.0-linux-x64
 
 # Add Julia as a base language (apart from Python3 that is already present)
-RUN curl https://julialang-s3.julialang.org/bin/linux/x64/1.6/julia-1.6.1-linux-x86_64.tar.gz -o /opt/julia.tar.gz
-RUN tar xzvf /opt/julia.tar.gz --transform 's@julia-1.6.1@julia@' -C /opt
-RUN rm -f /opt/julia.tar.gz
-RUN touch /opt/julia/v1.6.1
+RUN curl https://julialang-s3.julialang.org/bin/linux/x64/1.6/julia-1.6.1-linux-x86_64.tar.gz -o /opt/julia.tar.gz && \
+    tar xzvf /opt/julia.tar.gz --transform 's@julia-1.6.1@julia@' -C /opt && \
+    rm -f /opt/julia.tar.gz && touch /opt/julia/v1.6.1
 
 # Finish up mitex installation, enabling auto package install
-RUN miktexsetup finish              
-RUN initexmf --set-config-value "[MPM]AutoInstall=1"
+RUN miktexsetup finish && initexmf --set-config-value "[MPM]AutoInstall=1"
 
 # Install Jupyter in /opt/jupyter
 ENV JUPYTER_HOME=/opt/jupyter
@@ -104,31 +97,25 @@ ENV JUPYTER_DATA_DIR=${JUPYTER_HOME}/data
 ENV JUPYTER_RUNTIME_DIR=${JUPYTER_HOME}/runtime
 ENV JUPYTERLAB_WORKSPACES_DIR=${JUPYTER_HOME}/workspaces
 ENV JUPYTER_NBDIR=${JUPYTER_HOME}/nb
-RUN pip install --target ${JUPYTER_HOME}/srv jupyterlab
 ENV PYTHONPATH=${PYTHONPATH}:/opt/jupyter/srv
-RUN pip install nbconvert[webpdf]
+RUN pip3 install --target ${JUPYTER_HOME}/srv jupyterlab && pip3 install nbconvert[webpdf]
 
 # nbconvert installations do not install the templates at the right place
 # We install them in the right place now.
-RUN mkdir -p ${JUPYTER_HOME}/data/nbconvert/templates/
-RUN mv ${JUPYTER_HOME}/srv/share/jupyter/nbconvert/templates/* ${JUPYTER_HOME}/data/nbconvert/templates/
+RUN mkdir -p ${JUPYTER_HOME}/data/nbconvert/templates/ && \
+    mv ${JUPYTER_HOME}/srv/share/jupyter/nbconvert/templates/* ${JUPYTER_HOME}/data/nbconvert/templates/
 
 # Generate Jupyter configuration for notebooks
 # We will make jupyter listen on a specific port number.
 # JPYPORT is passed to us as a build-arg
 ARG JPYPORT
-RUN jupyter lab --generate-config
-RUN jupyter notebook --generate-config
+RUN jupyter lab --generate-config && jupyter notebook --generate-config
 
 # Change the location of the notebook directory
-RUN sed -i "s@.*c.NotebookApp.notebook_dir\ .*@c.NotebookApp.notebook_dir\ =\ \'/home/dev/work\'@" ${JUPYTER_CONFIG_DIR}/jupyter_notebook_config.py
-
-# Help jupyter find it's static assets
-RUN sed -i "s@.*c.LabApp.app_dir\ .*@c.LabApp.app_dir\ =\ \'/opt/jupyter/srv/share/jupyter/lab\'@" ${JUPYTER_CONFIG_DIR}/jupyter_lab_config.py
-
-# Change the port of jupyter lab and make sure it listens on all interfaces
-RUN sed -i "s@.*c.ServerApp.port\ .*@c.ServerApp.port\ =\ ${JPYPORT}@" ${JUPYTER_CONFIG_DIR}/jupyter_lab_config.py
-RUN sed -i "s@.*c.ServerApp.ip\ .*@c.ServerApp.ip\ =\ \'*\'@" ${JUPYTER_CONFIG_DIR}/jupyter_lab_config.py
+RUN sed -i "s@.*c.NotebookApp.notebook_dir\ .*@c.NotebookApp.notebook_dir\ =\ \'/home/dev/work\'@" ${JUPYTER_CONFIG_DIR}/jupyter_notebook_config.py && \
+    sed -i "s@.*c.LabApp.app_dir\ .*@c.LabApp.app_dir\ =\ \'/opt/jupyter/srv/share/jupyter/lab\'@" ${JUPYTER_CONFIG_DIR}/jupyter_lab_config.py && \
+    sed -i "s@.*c.ServerApp.port\ .*@c.ServerApp.port\ =\ ${JPYPORT}@" ${JUPYTER_CONFIG_DIR}/jupyter_lab_config.py && \
+    sed -i "s@.*c.ServerApp.ip\ .*@c.ServerApp.ip\ =\ \'*\'@" ${JUPYTER_CONFIG_DIR}/jupyter_lab_config.py
 
 # Install the IJulia package to use Julia with Jupyter
 RUN julia -e 'using Pkg; Pkg.add("IJulia");'
@@ -143,11 +130,8 @@ RUN julia -e 'using Pkg; Pkg.add("IJulia");'
 # ---------------
 # Typical way of using curl/wget from raw github does not work sometimes if github raw access is
 # having a problem. Hence we go another way: clone the github repo, and then execute install from there.
-RUN git clone https://github.com/ohmyzsh/ohmyzsh.git tmpozsh
-RUN tmpozsh/tools/install.sh --keep-zshrc
-RUN rm -rf tmpozsh
-# ---------------
-RUN sed -i 's/ZSH_THEME=.*/ZSH_THEME=\"agnoster\"/' ~/.zshrc
+RUN git clone https://github.com/ohmyzsh/ohmyzsh.git tmpozsh && tmpozsh/tools/install.sh --keep-zshrc && \
+    rm -rf tmpozsh && sed -i 's/ZSH_THEME=.*/ZSH_THEME=\"agnoster\"/' ~/.zshrc
 
 # If sourcing our special .zshrc is not already in there, source our .zshrc.devlab in .zshrc
 COPY zshrc.home.devlab ./.zshrc.home.devlab
@@ -157,10 +141,6 @@ RUN if ! grep -q ".zshrc.home.devlab" ~/.zshrc; then echo "# The next line is ad
 # what language they can make use of.
 ENV DEVLABLANG=${LANG}
 ENV DEVLABVER=${VER}
-
-# Finally, declare the home-directory as a volume so that all installs in the home directoru
-# and all work within the home-directory by the users remain there permantly.
-VOLUME /home/dev
 
 EXPOSE ${JPYPORT}
 RUN mkdir -p /opt/scripts

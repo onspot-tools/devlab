@@ -94,11 +94,11 @@ fi
 
 case $progarg in
 "notmux")
-    docker run --rm -p ${JPYPORT}:${JPYPORT} -it --mount src=devlabvol,dst=/home/dev ${MOUNT_CERTS} --name ${HNAME} --hostname ${HNAME} ${IMGNAME}:${LANG}-${VERSION} /bin/zsh
+    docker run --rm -p ${JPYPORT}:${JPYPORT} -it --mount src=devlab-${LANG}-${VERSION},dst=/home/dev ${MOUNT_CERTS} --name ${HNAME} --hostname ${HNAME} ${IMGNAME}:${LANG}-${VERSION} /bin/zsh
     ;;
 "jupyter")
     echo "Starting devlab..."
-    docker run --rm -p ${JPYPORT}:${JPYPORT} -d --mount src=devlabvol,dst=/home/dev ${MOUNT_CERTS} --name ${HNAME} --hostname localhost ${IMGNAME}:${LANG}-${VERSION} jupyter-lab
+    docker run --rm -p ${JPYPORT}:${JPYPORT} -d --mount src=devlab-${LANG}-${VERSION},dst=/home/dev ${MOUNT_CERTS} --name ${HNAME} --hostname localhost ${IMGNAME}:${LANG}-${VERSION} jupyter-lab
     sleep 2
     docker logs ${HNAME}
     echo 'If the URL for accessing your jupyter notebook is not shown above,'
@@ -106,5 +106,5 @@ case $progarg in
     echo 'multiple times until you get the URL.'
     ;;
 *)
-    docker run --rm -p ${JPYPORT}:${JPYPORT} -it --mount src=devlabvol,dst=/home/dev ${MOUNT_CERTS} --name ${HNAME} --hostname ${HNAME} ${IMGNAME}:${LANG}-${VERSION} starttmux
+    docker run --rm -p ${JPYPORT}:${JPYPORT} -it --mount src=devlab-${LANG}-${VERSION},dst=/home/dev ${MOUNT_CERTS} --name ${HNAME} --hostname ${HNAME} ${IMGNAME}:${LANG}-${VERSION} starttmux
 esac
