@@ -49,7 +49,7 @@ shift $(expr $OPTIND - 1 )
 progarg=$1
 progarg=${progarg:=tmux}
 lang=${lang:=base}
-ver=${ver:=v1}
+ver=${ver:=1}
 
 # Check if we are already running the devlab
 docker ps --filter "name=devlab" | tail -1 | grep -q devlab
@@ -75,13 +75,20 @@ else
 fi    
 
 # Build parameters
-IMGNAME=ramdootin/devlab
+REPONAME=ramdootin/devlab
 LANG=$lang
 VERSION=$ver
 
 # Run parameters
 HNAME=devlab
 JPYPORT=9000
+
+# Adjust the image name based on the language name
+if [[ $LANG == "base" ]]; then
+    IMGNAME=${REPONAME}  # For base devlab, we'll keep the image name simple
+else
+    IMGNAME="${REPONAME}-${LANG}"
+fi
 
 # If we have a "trustedcerts" directory where we are running the devlab, just mount it
 # to /opt/certs. This directory contains additional PEM certificates that may be needed to 
@@ -94,11 +101,11 @@ fi
 
 case $progarg in
 "notmux")
-    docker run --rm -p ${JPYPORT}:${JPYPORT} -it --mount src=devlab-${LANG}-${VERSION},dst=/home/dev ${MOUNT_CERTS} --name ${HNAME} --hostname ${HNAME} ${IMGNAME}:${LANG}-${VERSION} /bin/zsh
+    docker run --rm -p ${JPYPORT}:${JPYPORT} -it --mount src=devlab-${LANG}-${VERSION},dst=/home/dev ${MOUNT_CERTS} --name ${HNAME} --hostname ${HNAME} ${IMGNAME}:${VERSION} /bin/zsh
     ;;
 "jupyter")
     echo "Starting devlab..."
-    docker run --rm -p ${JPYPORT}:${JPYPORT} -d --mount src=devlab-${LANG}-${VERSION},dst=/home/dev ${MOUNT_CERTS} --name ${HNAME} --hostname localhost ${IMGNAME}:${LANG}-${VERSION} jupyter-lab
+    docker run --rm -p ${JPYPORT}:${JPYPORT} -d --mount src=devlab-${LANG}-${VERSION},dst=/home/dev ${MOUNT_CERTS} --name ${HNAME} --hostname localhost ${IMGNAME}:${VERSION} jupyter-lab
     sleep 2
     docker logs ${HNAME}
     echo 'If the URL for accessing your jupyter notebook is not shown above,'
@@ -106,5 +113,5 @@ case $progarg in
     echo 'multiple times until you get the URL.'
     ;;
 *)
-    docker run --rm -p ${JPYPORT}:${JPYPORT} -it --mount src=devlab-${LANG}-${VERSION},dst=/home/dev ${MOUNT_CERTS} --name ${HNAME} --hostname ${HNAME} ${IMGNAME}:${LANG}-${VERSION} starttmux
+    docker run --rm -p ${JPYPORT}:${JPYPORT} -it --mount src=devlab-${LANG}-${VERSION},dst=/home/dev ${MOUNT_CERTS} --name ${HNAME} --hostname ${HNAME} ${IMGNAME}:${VERSION} starttmux
 esac

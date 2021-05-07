@@ -24,7 +24,15 @@ RUN echo "pupdate ~/.ghcup/bin" >> /etc/zsh.zshrc.local
 USER dev
 WORKDIR /home/dev
 
-# Install GHCUP non-interactively
+# Create these variables so that programs running inside the containers know
+# what language they can make use of.
+ENV DEVLABLANG=${LANG}
+ENV DEVLABVER=${VER}
+
+# Install GHCUP non-interactively (for cabal users)
 ENV BOOTSTRAP_HASKELL_NONINTERACTIVE=1
-ENV BOOTSTRAP_HASKELL_GHC_VERSION=8.10.4
+ENV BOOTSTRAP_HASKELL_GHC_VERSION=${DEVLABVER}
 RUN curl --proto '=https' --tlsv1.2 -sSf https://get-ghcup.haskell.org | sh
+
+# Install haskell stack and its components
+RUN sudo zsh -c "curl -sSL https://get.haskellstack.org/ | sh"

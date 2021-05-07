@@ -19,24 +19,26 @@ Param(
 )
 
 # Build parameters
-$IMGNAME = "ramdootin/devlab"
+$REPONAME = "ramdootin/devlab"
 $LANG = "$l"
 $VERSION = "$v"
 
 # Run parameters
 $JPYPORT = 9000
 
+# Adjust the image name and the dockerfile based on the language chosen
 if ( $LANG -eq "base" ) {
+    $IMGNAME=${REPONAME}  # For base devlab, we'll keep the image name simple
     $DOCKERFILE = "dfbase"
 } else {
+    $IMGNAME="${REPONAME}-${LANG}" 
     $DOCKERFILE = "lang/df$LANG"
 }
 
 Write-Output "Build parameters:"
 Write-Output "Dockerfile: ${DOCKERFILE}"
-Write-Output "Image name: ${IMGNAME}"
+Write-Output "Repo name: ${REPONAME}"
 Write-Output "Language: ${LANG}"
 Write-Output "Language version: ${VERSION}"
 
-docker build -f ${DOCKERFILE} --tag ${IMGNAME}:${LANG}-${VERSION} --build-arg JPYPORT=${JPYPORT} --build-arg LANG=${LANG} --build-arg VER=${VERSION} .
-
+docker build -f ${DOCKERFILE} --tag ${IMGNAME}:${VERSION} --build-arg JPYPORT=${JPYPORT} --build-arg LANG=${LANG} --build-arg VER=${VERSION} .

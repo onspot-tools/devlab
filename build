@@ -30,26 +30,29 @@ shift $(expr $OPTIND - 1 )
 
 # Fix all default arguments
 lang=${lang:=base}
-ver=${ver:=v1}
+ver=${ver:=1}
 
 # Build parameters
-IMGNAME=ramdootin/devlab
+REPONAME=ramdootin/devlab
 LANG=$lang
 VERSION=$ver
 
 # Run parameters
 JPYPORT=9000
 
+# Adjust the image name and the dockerfile based on the language chosen
 if [[ $LANG == "base" ]]; then
+    IMGNAME=${REPONAME}  # For base devlab, we'll keep the image name simple
     DOCKERFILE=dfbase
 else
+    IMGNAME="${REPONAME}-${LANG}"
     DOCKERFILE=lang/df$LANG
 fi
 
 echo "Build parameters:"
 echo "Dockerfile: ${DOCKERFILE}"
-echo "Image name: ${IMGNAME}"
+echo "Repo name: ${REPONAME}"
 echo "Language: ${LANG}"
 echo "Language version: ${VERSION}"
 
-docker build -f ${DOCKERFILE} --tag ${IMGNAME}:${LANG}-${VERSION} --build-arg JPYPORT=${JPYPORT} --build-arg LANG=${LANG} --build-arg VER=${VERSION} .
+docker build -f ${DOCKERFILE} --tag ${IMGNAME}:${VERSION} --build-arg JPYPORT=${JPYPORT} --build-arg LANG=${LANG} --build-arg VER=${VERSION} .
