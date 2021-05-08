@@ -10,16 +10,20 @@
 # Licensed to you under the MIT License.
 # See the LICENSE file in the project root for more information.
 #
-FROM ramdootin/devlab:base-v1
+FROM ramdootin/devlab:1
 
 USER root 
 
 # Install ca certificates from curl's site itself, and also all dependencies
 RUN wget http://curl.haxx.se/ca/cacert.pem -O /etc/pki/trust/anchors/cacert.pem && \
-    update-ca-certificates && zypper -n install gcc-c++ gcc gmp-devel make ncurses-devel 
+    update-ca-certificates && zypper -n install gcc-c++ gcc gmp-devel make ncurses-devel \
+    python3-pip git ncurses-devel zeromq-devel cairo-devel pango-devel \
+    file-devel blas-devel lapack-devel
 
 # Update path to include ghcup binaries
 RUN echo "pupdate ~/.ghcup/bin" >> /etc/zsh.zshrc.local
+RUN echo "pupdate ~/.cabal/bin" >> /etc/zsh.zshrc.local
+ENV PATH=~/.ghcup/bin:~/.cabal/bin:/opt/jupyter/srv/bin:/opt/julia/bin:/opt/scripts:/home/dev/bin:${PATH}
 
 USER dev
 WORKDIR /home/dev
@@ -36,3 +40,9 @@ RUN curl --proto '=https' --tlsv1.2 -sSf https://get-ghcup.haskell.org | sh
 
 # Install haskell stack and its components
 RUN sudo zsh -c "curl -sSL https://get.haskellstack.org/ | sh"
+
+# Install IHaskell
+RUN git clone https://github.com/gibiansky/IHaskell .ihaskellsrc && \
+    cd .ihaskellsrc && pip3 install -r requirements.txt && stack config set system-ghc --global true 
+
+# RUN stack install --system-ghc --fast && ihaskell install --stack
