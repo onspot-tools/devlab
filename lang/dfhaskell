@@ -23,7 +23,7 @@ RUN wget http://curl.haxx.se/ca/cacert.pem -O /etc/pki/trust/anchors/cacert.pem 
 # Update path to include ghcup binaries
 RUN echo "pupdate ~/.ghcup/bin" >> /etc/zsh.zshrc.local
 RUN echo "pupdate ~/.cabal/bin" >> /etc/zsh.zshrc.local
-ENV PATH=~/.ghcup/bin:~/.cabal/bin:/opt/jupyter/srv/bin:/opt/julia/bin:/opt/scripts:/home/dev/bin:${PATH}
+ENV PATH=/home/dev/.ghcup/bin:/home/dev/.cabal/bin:/opt/jupyter/srv/bin:/opt/julia/bin:/opt/scripts:/home/dev/bin:${PATH}
 
 USER dev
 WORKDIR /home/dev
@@ -43,6 +43,6 @@ RUN sudo zsh -c "curl -sSL https://get.haskellstack.org/ | sh"
 
 # Install IHaskell
 RUN git clone https://github.com/gibiansky/IHaskell .ihaskellsrc && \
-    cd .ihaskellsrc && pip3 install -r requirements.txt && stack config set system-ghc --global true 
-
-# RUN stack install --system-ghc --fast && ihaskell install --stack
+    cd .ihaskellsrc && pip3 install -r requirements.txt && \
+    stack config set system-ghc --global true && \
+    stack install --system-ghc --fast && ihaskell install --stack
