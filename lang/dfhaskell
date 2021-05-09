@@ -23,7 +23,13 @@ RUN wget http://curl.haxx.se/ca/cacert.pem -O /etc/pki/trust/anchors/cacert.pem 
 # Update path to include ghcup binaries
 RUN echo "pupdate ~/.ghcup/bin" >> /etc/zsh.zshrc.local
 RUN echo "pupdate ~/.cabal/bin" >> /etc/zsh.zshrc.local
-ENV PATH=/home/dev/.ghcup/bin:/home/dev/.cabal/bin:/opt/jupyter/srv/bin:/opt/julia/bin:/opt/scripts:/home/dev/bin:${PATH}
+RUN echo "pupdate ~/.local/bin" >> /etc/zsh.zshrc.local
+
+# All paths from the base
+ENV PATH=/opt/jupyter/srv/bin:/opt/julia/bin:/opt/scripts:/home/dev/bin:${PATH}
+
+# New paths for haskell installations
+ENV PATH=/home/dev/.ghcup/bin:/home/dev/.cabal/bin:/home/dev/.local/bin:${PATH}
 
 USER dev
 WORKDIR /home/dev
