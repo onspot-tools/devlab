@@ -1,7 +1,9 @@
 # -*- mode: powershell -*-
 
 #
-# Installs devlab in the user's PC
+# Installs devlab in the user's PC.
+#
+# iex ((New-Object System.Net.WebClient).DownloadString('https://raw.githubusercontent.com/ramdootin/devlab/master/scripts/install.ps1'))
 #
 # Author: arvindd
 # Created: 10.May.2021
@@ -42,4 +44,8 @@ ${scripts} | ForEach-Object {
     Invoke-RestMethod -Uri ${PSItem} -Method Get | Out-File devlab/${sname}
 }
 
+Set-ExecutionPolicy Unrestricted -Scope CurrentUser -Force
 Write-Output 'devlab is installed in the directory "devlab". Go to that directory and start devlab, or add that directory in your PATH.'
+Write-Output 'NOTE: In order to run scripts, your execution policy is made unrestricted. To set it to your default run this command:'
+Write-Output 'Set-ExecutionPolicy Default -Scope CurrentUser -Force'
+Write-Output 'Note that by setting it to default, you may no longer be able to run the devlab script.'

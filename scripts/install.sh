@@ -3,6 +3,10 @@
 #
 # Installs devlab in the user's PC
 #
+# Install devlab using:
+#
+# curl -sSL https://raw.githubusercontent.com/ramdootin/devlab/master/scripts/install.sh | sh
+#
 # Author: arvindd
 # Created: 10.May.2021
 #
