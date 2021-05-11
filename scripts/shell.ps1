@@ -1,5 +1,4 @@
-#!/bin/bash
-
+# -*- mode: powershell -*-
 #
 # Shells into a running devlab
 #

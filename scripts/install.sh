@@ -38,8 +38,8 @@ curl --version 2>&1 > /dev/null && CURL=1 || CURL=0
 
 # Create a devlab directory where we will pull the scripts
 mkdir -p devlab
-echo "${scripts[@]}"
 
+# Now, pull in all the devlab scripts and put them in the devlab folder
 if [[ ${WGET} -eq 1 ]]; then
     for s in "${scripts[@]}"; do
         wget $s -O devlab/`basename $s`
