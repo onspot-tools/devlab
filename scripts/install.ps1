@@ -18,8 +18,7 @@ $scripts = @(
 )
 
 # We need docker for our work. If docker not present, just inform and fail
-docker -v 2>&1 > /dev/null
-if ($? -ne 0) {
+if ((Get-Command "docker.exe" -ErrorAction SilentlyContinue) -eq $null) {
     Write-Output "Docker not present, install docker before proceeding."
     Write-Output "Go here to get docker: https://hub.docker.com/editions/community/docker-ce-desktop-windows"
     exit 1
