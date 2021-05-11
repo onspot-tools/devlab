@@ -1,5 +1,4 @@
 # -*- mode: powershell -*-
-
 #
 # Installs devlab in the user's PC.
 #

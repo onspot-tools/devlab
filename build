@@ -1,7 +1,17 @@
 #!/bin/bash
-
 #
 # Builds the docker file creating the base image of devlab
+#
+# Usage:
+#
+# build [-n] [-l <lang>] [-v <version>]
+#
+# Where:
+# -n - Disables caching during build [Default: Cache is used]
+# -l <lang> - devlab for a language <lang> is built.
+#             Note that build uses lang/df<lang> as dockerfile for this language.
+#             Default: No language, and base devlab is built with dockerfile dfbase.
+# -v <version> - Version of the devlab for a specific language. Default: 1 
 #
 # Author: arvindd
 # Created: 21.Apr.2021

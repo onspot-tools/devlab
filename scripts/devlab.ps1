@@ -1,5 +1,5 @@
 # -*- mode: powershell -*-
-
+#
 # Starts the base image for use as a shell.
 #
 # The latest version of this script is available at:

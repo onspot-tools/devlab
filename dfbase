@@ -1,4 +1,5 @@
 # -*- mode: dockerfile -*-
+#
 # Base dockerfile
 #
 # This dockerfile is to build the basic opensuse/leap image based on which
@@ -57,7 +58,7 @@ RUN mkdir -p /opt && chown dev:users /opt
 RUN /usr/bin/python3 -m pip install --upgrade pip
 
 # Copy and extract emacs 27.1
-COPY emacs.tgz /opt/
+COPY tarzips/emacs.tgz /opt/
 RUN tar xzvf /opt/emacs.tgz && rm /opt/emacs.tgz
 
 # Some common aliases and functions to be added into /etc/zsh.zshrc.local
