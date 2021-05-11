@@ -40,5 +40,6 @@ If(!(Test-Path devlab))
 
 
 ${scripts} | ForEach-Object {
-    Invoke-RestMethod -Uri $PSItem -Method Get | Out-File devlab/$PSItem
+    $sname = Split-Path ${PSItem} -leaf
+    Invoke-RestMethod -Uri ${PSItem} -Method Get | Out-File devlab/${sname}
 }
