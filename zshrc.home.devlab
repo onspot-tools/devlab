@@ -1,5 +1,3 @@
-# BEGIN: ADDED BY DEVLAB -*- mode: zsh -*- 
-
 # Addition to make our oh-my-zsh with a sweet prompt
 prompt_context() {
    if [[ "$USER" != "$DEFAULT_USER" || -n "$SSH_CLIENT" ]]; then
@@ -10,5 +8,3 @@ prompt_context() {
 eval "$(direnv hook zsh)"
 export DIRENV_LOG_FORMAT=
 direnv allow
-
-# END: DEVLAB

@@ -139,7 +139,10 @@ RUN git clone https://github.com/ohmyzsh/ohmyzsh.git tmpozsh && tmpozsh/tools/in
 
 # If sourcing our special .zshrc is not already in there, source our .zshrc.devlab in .zshrc
 COPY zshrc.home.devlab ./.zshrc.home.devlab
-RUN if ! grep -q ".zshrc.home.devlab" ~/.zshrc; then echo "# The next line is added by devlab; DO NOT REMOVE IT!"; echo ". ~/.zshrc.home.devlab" >> ~/.zshrc; fi
+RUN if ! grep -q ".zshrc.home.devlab" ~/.zshrc; then \
+        echo ". ~/.zshrc.home.devlab" >> ~/.zshrc; \ 
+        echo "if [[ \"\$TMUX_PANE\" == \"%0\" ]]; then cat ~/.licenses/LICENSE && echo && echo; fi" >> ~/.zshrc; \ 
+    fi
 
 # Create these variables so that programs running inside the containers know
 # what language they can make use of.
@@ -147,6 +150,9 @@ ENV DEVLABLANG=${LANG}
 ENV DEVLABVER=${VER}
 
 EXPOSE ${JPYPORT}
+
+# Copy all license files in the container to be legally compliant
+COPY licenses/ .licenses/
 
 # Create the script and the work directories
 RUN mkdir -p /opt/scripts
