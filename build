@@ -12,13 +12,16 @@
 #
 
 # First, collect all options
-while getopts "l:v:" opt; do
+while getopts "nl:v:" opt; do
     case ${opt} in
         l)
             lang=${OPTARG}
             ;;
         v)
             ver=${OPTARG}
+            ;;
+        n)  
+            cache="--no-cache"
             ;;
         *)
             echo "Usage: `echo $0 | sed 's/\.\///'` [-l <lang>] [command]"
@@ -31,6 +34,7 @@ shift $(expr $OPTIND - 1 )
 # Fix all default arguments
 lang=${lang:=base}
 ver=${ver:=1}
+cacheopt=${cache:=}
 
 # Build parameters
 REPONAME=ramdootin/devlab
@@ -54,5 +58,6 @@ echo "Dockerfile: ${DOCKERFILE}"
 echo "Repo name: ${REPONAME}"
 echo "Language: ${LANG}"
 echo "Language version: ${VERSION}"
+echo "Using cache:" $([ -z ${cacheopt} ] && echo "Yes" || echo "No")
 
-docker build -f ${DOCKERFILE} --tag ${IMGNAME}:${VERSION} --build-arg JPYPORT=${JPYPORT} --build-arg LANG=${LANG} --build-arg VER=${VERSION} .
+docker build -f ${DOCKERFILE} ${cacheopt} --tag ${IMGNAME}:${VERSION} --build-arg JPYPORT=${JPYPORT} --build-arg LANG=${LANG} --build-arg VER=${VERSION} .

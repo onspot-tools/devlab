@@ -11,6 +11,6 @@ if [[ -z "$TMUX" ]]; then
    if [[ $VSCODEENV = "true" ]]; then
       (tmux -2 -u attach -t vscode || tmux -2 -u new -s vscode \; split-window -v \; select-pane -t0) && exit
    else
-       (tmux -2 -u attach -t console || tmux -2 -u new -s console \; split-window -h \; select-pane -t0) && exit
+       (tmux -2 -u attach -t console || tmux -2 -u new -s console \; split-window -h \; split-window -v \; select-pane -t0) && exit
    fi
 fi

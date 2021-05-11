@@ -4,11 +4,15 @@ devlab is a way to quickly set up development environments for various languages
 This project contains the Docker files for building devlab and all the associated scripts (both for Linux and for Powershell).
 
 # Getting pre-built docker images of devlab
-Get get pre-built docker images with:
+Get get a prebuilt devlab (included with Python3 and Julia), do this:
 
-    docker pull ramdootin/devlab:<tag-name>
+    docker pull ramdootin/devlab:1
 
-For example, to get the base docker image that contains Python and Julia development environments, along with Jupyter to spice-it-all up, just do:
+The above also forms the basis for other languages: so, using any of them below will also give you the base languages python and julia. For getting devlab with other languages, use the following generic form:
+
+    docker pull ramdootin/devlab-${lang}:${version}
+
+For example, to get the base docker image that contains Haskell (with GHC version 8.10.4), do this:
 
     docker pull ramdootin/devlab:base-v1
 

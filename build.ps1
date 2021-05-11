@@ -16,12 +16,14 @@ Param(
   [Parameter()]
   [String]$l = "base",
   [String]$v = "v1",
+  [string]$n = ""
 )
 
 # Build parameters
 $REPONAME = "ramdootin/devlab"
 $LANG = "$l"
 $VERSION = "$v"
+$CACHEOPT = if ($n) "--no-cache" else $n 
 
 # Run parameters
 $JPYPORT = 9000
@@ -40,5 +42,6 @@ Write-Output "Dockerfile: ${DOCKERFILE}"
 Write-Output "Repo name: ${REPONAME}"
 Write-Output "Language: ${LANG}"
 Write-Output "Language version: ${VERSION}"
+Write-Output "Using cache: " if ($n) "No" else "Yes"
 
 docker build -f ${DOCKERFILE} --tag ${IMGNAME}:${VERSION} --build-arg JPYPORT=${JPYPORT} --build-arg LANG=${LANG} --build-arg VER=${VERSION} .

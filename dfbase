@@ -62,7 +62,6 @@ RUN tar xzvf /opt/emacs.tgz && rm /opt/emacs.tgz
 
 # Some common aliases and functions to be added into /etc/zsh.zshrc.local
 COPY zsh.zshrc.local /etc/
-ENV PATH=/opt/jupyter/srv/bin:/opt/julia/bin:/opt/scripts:/home/dev/bin:${PATH}
 
 # Now, install everything else with the user's id
 USER dev
@@ -96,9 +95,13 @@ ENV JUPYTER_CONFIG_DIR=${JUPYTER_HOME}/config
 ENV JUPYTER_DATA_DIR=${JUPYTER_HOME}/data
 ENV JUPYTER_RUNTIME_DIR=${JUPYTER_HOME}/runtime
 ENV JUPYTERLAB_WORKSPACES_DIR=${JUPYTER_HOME}/workspaces
+ENV JUPYTERLAB_DIR=${JUPYTER_HOME}/srv/share/jupyter/lab
 ENV JUPYTER_NBDIR=${JUPYTER_HOME}/nb
 ENV PYTHONPATH=${PYTHONPATH}:/opt/jupyter/srv
-RUN pip3 install --target ${JUPYTER_HOME}/srv jupyterlab && pip3 install nbconvert[webpdf]
+ENV PATH=/opt/node/bin:/opt/jupyter/srv/bin:/opt/julia/bin:/opt/scripts:${PATH}
+ENV PATH=/home/dev/bin:/home/dev/.local/bin:${PATH}
+
+RUN pip3 install --target ${JUPYTER_HOME}/srv jupyterlab==3.0.14 && pip3 install nbconvert[webpdf]
 
 # nbconvert installations do not install the templates at the right place
 # We install them in the right place now.
@@ -109,7 +112,8 @@ RUN mkdir -p ${JUPYTER_HOME}/data/nbconvert/templates/ && \
 # We will make jupyter listen on a specific port number.
 # JPYPORT is passed to us as a build-arg
 ARG JPYPORT
-RUN jupyter lab --generate-config && jupyter notebook --generate-config
+RUN jupyter notebook --generate-config
+RUN jupyter lab --generate-config
 
 # Change the location of the notebook directory
 RUN sed -i "s@.*c.NotebookApp.notebook_dir\ .*@c.NotebookApp.notebook_dir\ =\ \'/home/dev/work\'@" ${JUPYTER_CONFIG_DIR}/jupyter_notebook_config.py && \
@@ -143,6 +147,10 @@ ENV DEVLABLANG=${LANG}
 ENV DEVLABVER=${VER}
 
 EXPOSE ${JPYPORT}
+
+# Create the script and the work directories
 RUN mkdir -p /opt/scripts
-COPY ["starttmux", "entrypoint", "startscripts/", "/opt/scripts/"]
+
+# Finally, copy all the scripts in their location
+COPY ["starttmux", "entrypoint", "scripts/", "/opt/scripts/"]
 ENTRYPOINT [ "/opt/scripts/entrypoint" ]
