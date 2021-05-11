@@ -87,4 +87,4 @@ fi
 # Create work directory
 mkdir -p work
 
-exec "$@"
+exec env "$@"
