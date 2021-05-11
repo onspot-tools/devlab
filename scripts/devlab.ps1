@@ -58,7 +58,7 @@ if ( $cnt.Lines -eq 2 ) {
 }  
 
 # Build parameters
-$IMGNAME = "ramdootin/devlab"
+$REPONAME = "ramdootin/devlab"
 $LANG = "$l"
 $VERSION = "$v"
 

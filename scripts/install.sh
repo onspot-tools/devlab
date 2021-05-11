@@ -53,3 +53,5 @@ elif [[ ${CURL} -eq 1 ]]; then
 else
     echo "curl or wget needed for installation. Unable to install devlab."
 fi
+
+echo 'devlab is installed in the directory "devlab". Go to that directory and start devlab, or add that directory in your PATH.'

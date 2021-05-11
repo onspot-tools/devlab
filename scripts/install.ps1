@@ -25,8 +25,7 @@ if ((Get-Command "docker.exe" -ErrorAction SilentlyContinue) -eq $null) {
 }
 
 # Check if docker has been started, else just inform and fail
-$docker = Get-Process com.docker.proxy-ErrorAction SilentlyContinue
-if ($docker) {
+if ((Get-Process com.docker.proxy -ErrorAction SilentlyContinue) -eq $null) {
     Write-Output "Docker not started - start docker and then restart this script."
     exit 2
 }
@@ -42,3 +41,5 @@ ${scripts} | ForEach-Object {
     $sname = Split-Path ${PSItem} -leaf
     Invoke-RestMethod -Uri ${PSItem} -Method Get | Out-File devlab/${sname}
 }
+
+Write-Output 'devlab is installed in the directory "devlab". Go to that directory and start devlab, or add that directory in your PATH.'
