@@ -49,13 +49,15 @@ if ( $LANG -eq "base" ) {
 # Calculate the build version based on git tag:
 # If the latest commit has a tag, use that as the version of the docker image
 # If the latest commit has no tag, then, there is no version for the image: it just gets "latest" as the default version.
-lasttag = & git describe --abbrev=0 --tags
-lastcommit = & git describe --tags
+$lasttag = & git describe --abbrev=0 --tags
+$lastcommit = & git describe --tags
 if ("$lasttag" -eq "$lastcommit") {
     # Our commit has a tag; so use that as the version
-    VERSION=${lasttag}
+    # The tag is of the form "<lang>-<version>", so take only
+    # the <version> part of the tag.
+    $VERSION=$lasttag -replace '.*-'
 } else {
-  VERSION=${VERSION:=latest}
+  $VERSION=${VERSION:=latest}
 }
 
 Write-Output "Build parameters:"

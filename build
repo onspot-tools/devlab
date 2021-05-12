@@ -66,7 +66,9 @@ lastcommit=`git describe --tags`
 if [[ "$lasttag" == "$lastcommit" ]]
 then
     # Our commit has a tag; so use that as the version
-    VERSION=${lasttag}
+    # The tag is of the form "<lang>-<version>", so take only
+    # the <version> part of the tag.
+    VERSION=$(sed 's/^.*-//' <<< "$lasttag")
 fi
 
 VERSION=${VERSION:=latest}
