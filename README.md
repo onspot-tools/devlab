@@ -27,7 +27,7 @@ The devlab script is the starting point for using devlab, and has the following 
 
 where:
 -l <lang> - Use devlab for a specific language. Default: devlab comes up with Python and JUlia.
--v <version> - Use devlab for a specific version of a language. Default: Version 1
+-v <version> - Use devlab for a specific version of a language. Default: latest version
 
 The other commands are explained below.
 ## Starting devlab
