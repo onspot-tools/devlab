@@ -44,12 +44,7 @@ cacheopt=${cache:=}
 # Build parameters
 REPONAME=ramdootin/devlab
 LANG=$lang
-
-# Calculate the build version based on git tag:
-# If the latest commit has a tag, use that as the version of the docker image
-# If the latest commit has no tag, then, there is no version for the image: it just gets "latest" as the default version.
-
-VERSION=$ver
+CACHEOPT=$cacheopt
 
 # Run parameters
 JPYPORT=9000
@@ -63,11 +58,24 @@ else
     DOCKERFILE=lang/df$LANG
 fi
 
+# Calculate the build version based on git tag:
+# If the latest commit has a tag, use that as the version of the docker image
+# If the latest commit has no tag, then, there is no version for the image: it just gets "latest" as the default version.
+lasttag=`git describe --abbrev=0 --tags`
+lastcommit=`git describe --tags`
+if [[ "$lasttag" == "$lastcommit" ]]
+then
+    # Our commit has a tag; so use that as the version
+    VERSION=${lasttag}
+fi
+
+VERSION=${VERSION:=latest}
+
 echo "Build parameters:"
 echo "Dockerfile: ${DOCKERFILE}"
 echo "Repo name: ${REPONAME}"
 echo "Language: ${LANG}"
 echo "Language version: ${VERSION}"
-echo "Using cache:" $([ -z ${cacheopt} ] && echo "Yes" || echo "No")
+echo "Using cache:" $([ -z "${CACHEOPT}" ] && echo "Yes" || echo "No")
 
-docker build -f ${DOCKERFILE} ${cacheopt} --tag ${IMGNAME}:${VERSION} --build-arg JPYPORT=${JPYPORT} --build-arg LANG=${LANG} --build-arg VER=${VERSION} .
+docker build -f ${DOCKERFILE} ${CACHEOPT} --tag ${IMGNAME}:${VERSION}  --build-arg JPYPORT=${JPYPORT} --build-arg LANG=${LANG} .

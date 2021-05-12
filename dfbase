@@ -148,7 +148,6 @@ RUN if ! grep -q ".zshrc.home.devlab" ~/.zshrc; then \
 # Create these variables so that programs running inside the containers know
 # what language they can make use of.
 ENV DEVLABLANG=${LANG}
-ENV DEVLABVER=${VER}
 
 EXPOSE ${JPYPORT}
 
