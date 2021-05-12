@@ -1,0 +1,50 @@
+# -*- mode: dockerfile -*-
+# Dotnet dockerfile
+#
+# This dockerfile creates the dotnet core image. Dotnet core contains
+# C#, F# and the Visual Basic languages.
+#
+# Author: arvindd
+# Created: 12.May.2021
+#
+# Copyright (c) 2021 Arvind Devarajan
+# Licensed to you under the MIT License.
+# See the LICENSE file in the project root for more information.
+#
+FROM ramdootin/devlab:1.0
+
+USER root 
+
+# Set some environment variables
+ENV \
+    # Enable detection of dotnet running in a container
+    DOTNET_RUNNING_IN_CONTAINER=true \
+    # Enable correct mode for dotnet watch (only mode supported in a container)
+    DOTNET_USE_POLLING_FILE_WATCHER=true \
+    # Skip extraction of XML docs - generally not useful within an image / container - helps performancs
+    NUGET_XMLDOC_MODE=skip
+
+# Prepare for dotnet installations - add MS repos, etc.
+RUN zypper -n install libicu
+RUN rpm --import https://packages.microsoft.com/keys/microsoft.asc
+RUN wget https://packages.microsoft.com/config/opensuse/15/prod.repo
+RUN mv prod.repo /etc/zypp/repos.d/microsoft-prod.repo
+RUN chown root:root /etc/zypp/repos.d/microsoft-prod.repo
+
+# Install dotnet core 5.0 and its dependencies
+RUN zypper -n install dotnet-sdk-5.0
+RUN zypper -n install aspnetcore-runtime-5.0
+
+# New paths for dotnet global tool installations
+ENV PATH=/home/dev/.dotnet/tools:${PATH}
+
+USER dev
+WORKDIR /home/dev
+
+# Create these variables so that programs running inside the containers know
+# what language they can make use of.
+ENV DEVLABLANG=${LANG}
+
+# Install the Jupyter kernel for dotnet
+RUN dotnet tool install -g --add-source "https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet-tools/nuget/v3/index.json" Microsoft.dotnet-interactive
+RUN dotnet interactive jupyter install
