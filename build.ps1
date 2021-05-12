@@ -26,7 +26,7 @@
 Param(
   [Parameter()]
   [String]$l = "base",
-  [String]$v = "v1",
+  [String]$v = "1.0",
   [string]$n = ""
 )
 

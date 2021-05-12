@@ -29,7 +29,7 @@
 Param(
   [Parameter()]
   [String]$l = "base",
-  [String]$v = "1",
+  [String]$v = "1.0",
   [Parameter(Position = 0, ValueFromRemainingArguments = $true)]
   [String]$progarg = "tmux"
 )

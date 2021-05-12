@@ -43,7 +43,7 @@ shift $(expr $OPTIND - 1 )
 
 # Fix all default arguments
 lang=${lang:=base}
-ver=${ver:=1}
+ver=${ver:=1.0}
 cacheopt=${cache:=}
 
 # Build parameters
