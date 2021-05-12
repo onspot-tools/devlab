@@ -7,10 +7,14 @@ This project contains the Docker files for building devlab and all the associate
 The easiest way to get devlab on your PC is by using the install-scripts:
 
 Linux / WSL:
-    curl -sSL https://raw.githubusercontent.com/ramdootin/devlab/master/scripts/install.sh | sh
+```
+curl -sSL https://raw.githubusercontent.com/ramdootin/devlab/master/scripts/install.sh | sh`
+```
 
 Powershell:
-    iex ((New-Object System.Net.WebClient).DownloadString('https://raw.githubusercontent.com/ramdootin/devlab/master/scripts/install.ps1'))
+```
+iex ((New-Object System.Net.WebClient).DownloadString('https://raw.githubusercontent.com/ramdootin/devlab/master/scripts/install.ps1'))
+```    
 
 Either of these will create a directory called `devlab` where you invoked them, and will also pull in the devlab start-scripts (also called as devlab (Linux) / devlab.ps (powershell) into that directory.
 
