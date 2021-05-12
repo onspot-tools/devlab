@@ -66,3 +66,8 @@ Write-Output "Language version: ${VERSION}"
 Write-Output "Using cache: " if ($n) "No" else "Yes"
 
 docker build -f ${DOCKERFILE} ${CACHEOPT} --tag ${IMGNAME}:${VERSION} --build-arg JPYPORT=${JPYPORT} --build-arg LANG=${LANG} .
+
+# If we built a docker with a tag, then also tag the same as the "latest" image
+if ("$VERSION" -ne "latest") {
+    docker tag ${IMGNAME}:${VERSION} "${IMGNAME}:latest"
+}

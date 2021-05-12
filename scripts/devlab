@@ -49,7 +49,7 @@ shift $(expr $OPTIND - 1 )
 progarg=$1
 progarg=${progarg:=tmux}
 lang=${lang:=base}
-ver=${ver:=1.0}
+ver=${ver:=latest}
 
 # Check if we are already running the devlab
 docker ps --filter "name=devlab" | tail -1 | grep -q devlab
