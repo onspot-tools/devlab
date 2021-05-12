@@ -11,7 +11,6 @@
 # -l <lang> - devlab for a language <lang> is built.
 #             Note that build uses lang/df<lang> as dockerfile for this language.
 #             Default: No language, and base devlab is built with dockerfile dfbase.
-# -v <version> - Version of the devlab for a specific language. Default: 1 
 #
 # Author: arvindd
 # Created: 21.Apr.2021
@@ -22,19 +21,16 @@
 #
 
 # First, collect all options
-while getopts "nl:v:" opt; do
+while getopts "nl:" opt; do
     case ${opt} in
         l)
             lang=${OPTARG}
-            ;;
-        v)
-            ver=${OPTARG}
             ;;
         n)  
             cache="--no-cache"
             ;;
         *)
-            echo "Usage: `echo $0 | sed 's/\.\///'` [-l <lang>] [command]"
+            echo "Usage: `echo $0 | sed 's/\.\///'` [-n] [-l <lang>] [command]"
             exit -1
             ;;
     esac
@@ -43,12 +39,16 @@ shift $(expr $OPTIND - 1 )
 
 # Fix all default arguments
 lang=${lang:=base}
-ver=${ver:=1.0}
 cacheopt=${cache:=}
 
 # Build parameters
 REPONAME=ramdootin/devlab
 LANG=$lang
+
+# Calculate the build version based on git tag:
+# If the latest commit has a tag, use that as the version of the docker image
+# If the latest commit has no tag, then, there is no version for the image: it just gets "latest" as the default version.
+
 VERSION=$ver
 
 # Run parameters
