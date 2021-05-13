@@ -1,3 +1,5 @@
+# -*- mode: bash -*-
+
 # Function to cleanly add some directory to the PATH variable
 pupdate() 
 { 
@@ -25,7 +27,7 @@ eupdate()
 pupdate /opt/emacs/bin
 pupdate /opt/node/bin
 pupdate /opt/scripts
-pupdate /opt/jupyter/srv/bin
+pupdate ~/.jupyter/srv/bin
 pupdate /opt/julia/bin
 pupdate ~/bin
 pupdate ~/.local/bin

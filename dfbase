@@ -90,16 +90,15 @@ RUN curl https://julialang-s3.julialang.org/bin/linux/x64/1.6/julia-1.6.1-linux-
 # Finish up mitex installation, enabling auto package install
 RUN miktexsetup finish && initexmf --set-config-value "[MPM]AutoInstall=1"
 
-# Install Jupyter in /opt/jupyter
-ENV JUPYTER_HOME=/opt/jupyter
+# Install Jupyter in /home/dev/.jupyter
+ENV JUPYTER_HOME=/home/dev/.jupyter
 ENV JUPYTER_CONFIG_DIR=${JUPYTER_HOME}/config
 ENV JUPYTER_DATA_DIR=${JUPYTER_HOME}/data
 ENV JUPYTER_RUNTIME_DIR=${JUPYTER_HOME}/runtime
-ENV JUPYTERLAB_WORKSPACES_DIR=${JUPYTER_HOME}/workspaces
 ENV JUPYTERLAB_DIR=${JUPYTER_HOME}/srv/share/jupyter/lab
-ENV JUPYTER_NBDIR=${JUPYTER_HOME}/nb
-ENV PYTHONPATH=${PYTHONPATH}:/opt/jupyter/srv
-ENV PATH=/opt/node/bin:/opt/jupyter/srv/bin:/opt/julia/bin:/opt/scripts:${PATH}
+ENV JUPYTERLAB_WORKSPACES_DIR=${JUPYTERLAB_DIR}/workspaces
+ENV PYTHONPATH=${PYTHONPATH}:${JUPYTER_HOME}/srv
+ENV PATH=/opt/emacs/bin:/opt/node/bin:${JUPYTER_HOME}/srv/bin:/opt/julia/bin:/opt/scripts:${PATH}
 ENV PATH=/home/dev/bin:/home/dev/.local/bin:${PATH}
 
 RUN pip3 install --target ${JUPYTER_HOME}/srv jupyterlab==3.0.14 && pip3 install nbconvert[webpdf]
@@ -118,7 +117,7 @@ RUN jupyter lab --generate-config
 
 # Change the location of the notebook directory
 RUN sed -i "s@.*c.NotebookApp.notebook_dir\ .*@c.NotebookApp.notebook_dir\ =\ \'/home/dev/work\'@" ${JUPYTER_CONFIG_DIR}/jupyter_notebook_config.py && \
-    sed -i "s@.*c.LabApp.app_dir\ .*@c.LabApp.app_dir\ =\ \'/opt/jupyter/srv/share/jupyter/lab\'@" ${JUPYTER_CONFIG_DIR}/jupyter_lab_config.py && \
+    sed -i "s@.*c.LabApp.app_dir\ .*@c.LabApp.app_dir\ =\ \'${JUPYTERLAB_DIR}\'@" ${JUPYTER_CONFIG_DIR}/jupyter_lab_config.py && \
     sed -i "s@.*c.ServerApp.port\ .*@c.ServerApp.port\ =\ ${JPYPORT}@" ${JUPYTER_CONFIG_DIR}/jupyter_lab_config.py && \
     sed -i "s@.*c.ServerApp.ip\ .*@c.ServerApp.ip\ =\ \'*\'@" ${JUPYTER_CONFIG_DIR}/jupyter_lab_config.py
 
