@@ -11,3 +11,23 @@
 #
 FROM ramdootin/devlab:1.0
 
+LABEL Name="Java devlab"
+LABEL Description=""
+
+USER root 
+
+# Make a directory for java and download java there
+RUN curl -L "https://github.com/AdoptOpenJDK/openjdk16-binaries/releases/download/jdk-16.0.1%2B9_openj9-0.26.0/OpenJDK16U-jdk_x64_linux_openj9_16.0.1_9_openj9-0.26.0.tar.gz" -o /opt/java.tgz && \ 
+   tar xzvf /opt/java.tgz --transform 's@jdk-16.0.1+9@javadk@' -C /opt && \
+   rm -f /opt/java.tgz && touch /opt/javadk/v16.0.1+9
+
+# Update path to include java
+RUN echo "pupdate /opt/javadk/bin" >> /etc/zsh.zshrc.local
+
+# Install ijava
+USER dev
+
+ENV PATH=/opt/javadk/bin:${PATH}
+RUN curl -L https://github.com/SpencerPark/IJava/releases/download/v1.3.0/ijava-1.3.0.zip -o ijava.zip && \
+    unzip -d ~/.ijava ijava.zip && rm -f ~/ijava.zip && \
+    cd ~/.ijava && python3 install.py --user 

@@ -1,0 +1,43 @@
+The following text was obtained from:
+
+https://adoptopenjdk.net/about.html
+
+---
+About
+Background
+AdoptOpenJDK.net started in 2017 following years of discussions about the general lack of an open and reproducible build & test system for OpenJDK source across multiple platforms.
+
+AdoptOpenJDK provides rock-solid OpenJDK and Eclipse OpenJ9 (with OpenJDK class libraries) binaries for the Java ecosystem and also provides infrastructure as code, and a Build farm for builders of OpenJDK and Eclipse OpenJ9 (with OpenJDK class libraries), on any platform.
+
+Our Mission
+Provide a reliable source of OpenJDK binaries for all platforms, for the long term future!
+Enable R&D by OpenJDK developers, academics and researchers.
+Provide an open, common, audited, build infrastructure for vendors to use (if they wish).
+Provide a place to try out build and test infrastructure ideas that could be co-opted / re-implemented in OpenJDK.
+Who's behind the AdoptOpenJDK.net Community?
+AdoptOpenJDK is a community of Java User Group (JUG) members, Java developers and vendors including Azul, Amazon, GoDaddy, IBM, jClarity (acquired by Microsoft), Microsoft, New Relic, Pivotal and Red Hat. These community members are all advocates of OpenJDK, the open source project which forms the basis of the Java programming language and platform. The group also has other activities which you can discover in the Adoption Group at OpenJDK.
+
+IBM is also a core committer and advocate of Eclipse OpenJ9.
+
+See our Sponsors page for a subset of the vendors that are involved.
+
+AdoptOpenJDK is one of several community projects co-created by the London Java Community .
+
+License(s)
+Build scripts and other code to produce the binaries, the website and other build infrastructure are licensed under Apache License, Version 2.0.
+OpenJDK code itself is licensed under GPL v2 with Classpath Exception (GPLv2+CE).
+Eclipse OpenJ9 is licensed under Several licenses.
+Usage FAQ
+The following section should not be construed as formal legal advice. For that, please seek out a qualified lawyer.
+
+Can I distribute AdoptOpenJDK binaries?
+Yes.
+
+Can I bundle AdoptOpenJDK binaries in my application and distribute them?
+Yes. The GPLv2+CE license allows you to do this.
+
+I heard some folks wondering if the lack of TCK/JCK putting AdoptOpenJDK under legal risk. Does distributing the AdoptOpenJDK binary (whether part of my app or stand alone) expose me to legal risk?
+No. AdoptOpenJDK has the same source code + minor patches (under the same GPLv2+CE license) as OpenJDK.
+
+Support
+There are both community and commercial support available for AdoptOpenJDK binaries, see our Support Page for details.
