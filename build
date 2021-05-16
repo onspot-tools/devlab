@@ -42,7 +42,7 @@ lang=${lang:=base}
 cacheopt=${cache:=}
 
 # Build parameters
-REPONAME=ramdootin/devlab
+REPONAME=onspot/devlab
 LANG=$lang
 CACHEOPT=$cacheopt
 

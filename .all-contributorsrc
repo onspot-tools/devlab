@@ -1,0 +1,32 @@
+{
+  "projectName": "devlab",
+  "projectOwner": "onspot-tools",
+  "repoType": "github",
+  "repoHost": "https://github.com",
+  "files": [
+    "README.md"
+  ],
+  "imageSize": 100,
+  "commit": true,
+  "commitConvention": "none",
+  "contributors": [
+    {
+      "login": "arvindd",
+      "name": "Arvind Devarajan",
+      "avatar_url": "https://avatars.githubusercontent.com/u/1006084?v=4",
+      "profile": "https://blog.ramdoot.in/",
+      "contributions": [
+        "code",
+        "doc",
+        "review",
+        "bug",
+        "example",
+        "ideas",
+        "infra",
+        "maintenance",
+        "question"
+      ]
+    }
+  ],
+  "contributorsPerLine": 7
+}

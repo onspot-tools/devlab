@@ -30,7 +30,7 @@ Param(
 )
 
 # Build parameters
-$REPONAME = "ramdootin/devlab"
+$REPONAME = "onspot/devlab"
 $LANG = "$l"
 $CACHEOPT = if ($n) "--no-cache" else $n 
 
