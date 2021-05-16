@@ -13,9 +13,6 @@
 #             Default: No language, and base devlab is built with dockerfile dfbase.
 # -v <version> - Version of the devlab for a specific language. Default: 1 
 #
-# Author: arvindd
-# Created: 21.Apr.2021
-#
 # Copyright (c) 2021 Arvind Devarajan
 # Licensed to you under the MIT License.
 # See the LICENSE file in the project root for more information.
