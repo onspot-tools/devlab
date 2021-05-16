@@ -5,7 +5,7 @@
 #
 # Install devlab using:
 #
-# curl -sSL https://raw.githubusercontent.com/ramdootin/devlab/master/scripts/install.sh | sh
+# curl -sSL https://raw.githubusercontent.com/onspot-tools/devlab/master/scripts/install.sh | sh
 #
 # Author: arvindd
 # Created: 10.May.2021
@@ -17,8 +17,8 @@
 
 # List of all scripts to be downloaded
 scripts=(
-    https://raw.githubusercontent.com/ramdootin/devlab/master/scripts/devlab
-    https://raw.githubusercontent.com/ramdootin/devlab/master/scripts/shell
+    https://raw.githubusercontent.com/onspot-tools/devlab/master/scripts/devlab
+    https://raw.githubusercontent.com/onspot-tools/devlab/master/scripts/shell
 )
 
 # We need docker for our work. If docker not present, just inform and fail
