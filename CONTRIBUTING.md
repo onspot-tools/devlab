@@ -99,4 +99,4 @@ The various contribution types are mentioned in the [emoji key here](https://all
 
     npx all-contributors add <your-github-uid> code,doc,bug,question
 
-That's it! This command will add you as the contributor to this project for the contribution types given in your command and also commit the code. The changes are done in the (README.md) file - the last part of that file will contain your github avatar and your contributions as emojies.
+That's it! This command will add you as the contributor to this project for the contribution types given in your command and also commit the code. The changes are done in the [README.md](README.md) file - the last part of that file will contain your github avatar and your contributions as emojies.
