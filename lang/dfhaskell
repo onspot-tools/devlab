@@ -3,14 +3,11 @@
 #
 # This dockerfile creates the haskell image. It derives from the base.
 #
-# Author: arvindd
-# Created: 03.May.2021
-#
 # Copyright (c) 2021 Arvind Devarajan
 # Licensed to you under the MIT License.
 # See the LICENSE file in the project root for more information.
 #
-FROM ramdootin/devlab:1.0
+FROM onspot/devlab:2.0
 
 USER root 
 
