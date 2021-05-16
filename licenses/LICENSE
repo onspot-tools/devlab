@@ -2,7 +2,7 @@ devlab version 1.0 (MIT Licensed)
 ---------------------------------
 This version of devlab is based on OpenSUSE Leap 15.2 (which is GNU GPL v2 licensed), and contains other licensed programs. Individual programs are licensed with their own licenses. For a list of programs and their licenses, please look into the /dev/home/.licenses directory.
 
-The source code for building devlab itself are MIT licensed. The source code for devlab (including all licenses) can be obtained from: https://github.com/ramdootin/devlab. 
+The source code for building devlab itself are MIT licensed. The source code for devlab (including all licenses) can be obtained from: https://github.com/onspot-tools/devlab. 
 
 What you are seeing now is a terminal split into 3 panes using tmux. To move around to another pane, use "CTRL-B <arrow key>". Tmux has many features and shortcuts, so just search for "tmux" using your favourite search engine.
 
