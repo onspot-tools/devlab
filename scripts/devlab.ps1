@@ -4,7 +4,7 @@
 #
 # The latest version of this script is available at:
 #
-# https://raw.githubusercontent.com/ramdootin/devlab/master/startscripts/devlab.ps1
+# https://raw.githubusercontent.com/onspot-tools/devlab/master/startscripts/devlab.ps1
 #
 # If you already have devlab with you, the script is also in there:
 #
@@ -14,7 +14,7 @@
 # script got from your devlab might not be the latest one published
 # unless you have also pulled the latest devlab from dockerhub:
 #
-# docker pull ramdootin/devlab:<lang>-<version>
+# docker pull onspot/devlab-<lang>:<version>
 #
 # Author: arvindd
 # Created: 21.Apr.2021
@@ -58,7 +58,7 @@ if ( $cnt.Lines -eq 2 ) {
 }  
 
 # Build parameters
-$REPONAME = "ramdootin/devlab"
+$REPONAME = "onspot/devlab"
 $LANG = "$l"
 $VERSION = "$v"
 
