@@ -1,5 +1,4 @@
 #!/bin/zsh
-
 #
 # Entrypoint for the devlab container.
 #
@@ -10,9 +9,6 @@
 # the command to be executed, and the rest of them are the commands
 # for that script.
 # 
-# Author: arvindd
-# Created: 27.Apr.2021
-#
 # Copyright (c) 2021 Arvind Devarajan
 # Licensed to you under the MIT License.
 # See the LICENSE file in the project root for more information.

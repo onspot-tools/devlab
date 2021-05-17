@@ -1,38 +1,46 @@
 # -*- mode: powershell -*-
 #
-# Builds the docker file creating the base image of devlab
+# Builds the docker file creating the base image of devlab.
+# The dockerfile used for building depends on the git-branch in which
+# the command is invoked: since each branch is a language name, the 
+# dockerfile used is lang/df<branch>. Exception only in the "master"
+# branch, where the build is used for building the base-image with
+# the dockerfile dfbase.
+#
+# For example, when `build` is invoked in a branch named `haskell`,
+# the dockerfile used is lang/dfhaskell. 
 #
 # Usage:
 #
-# build [-n] [-l <lang>] [-v <version>]
+# build [-n]
 #
 # Where:
 # -n - Disables caching during build [Default: Cache is used]
-# -l <lang> - devlab for a language <lang> is built.
-#             Note that build uses lang/df<lang> as dockerfile for this language.
-#             Default: No language, and base devlab is built with dockerfile dfbase.
-# -v <version> - Version of the devlab for a specific language. Default: 1 
-#
-# Author: arvindd
-# Created: 21.Apr.2021
 #
 # Copyright (c) 2021 Arvind Devarajan
 # Licensed to you under the MIT License.
 # See the LICENSE file in the project root for more information.
 #
 
-# First, collect all options
-[CmdletBinding()]
-Param(
-  [Parameter()]
-  [String]$l = "base",
-  [string]$n = ""
-)
+# Check if we have a "no-cache" option -n.
+if (${args}.Count -eq 1) {
+    if (${args}[0] -ne "-n") {
+        echo "Usage: $MyInvocation.MyCommand.Name [-n]"
+        exit 1
+    } else {
+        $cache="--no-cache"
+    }
+}
+
+# Take the name of the current git-branch as our language
+$LANG = & git branch --show-current
+if ($LANG == "master") {
+    $LANG = "base"
+}
 
 # Build parameters
 $REPONAME = "onspot/devlab"
-$LANG = "$l"
-$CACHEOPT = if ($n) "--no-cache" else $n 
+$CACHEOPT = $cache 
 
 # Run parameters
 $JPYPORT = 9000
@@ -55,9 +63,15 @@ if ("$lasttag" -eq "$lastcommit") {
     # Our commit has a tag; so use that as the version
     # The tag is of the form "<lang>-<version>", so take only
     # the <version> part of the tag.
-    $VERSION=$lasttag -replace '.*-'
+    # The version string is of the form:
+    # <lang>-<langversion>-<base-dockerfile-version>
+    $VERSION=$lasttag -replace '^[^-]*-'
 } else {
   $VERSION=${VERSION:=latest}
+}
+
+if ($lasttag -notlike "*${lang}*") {
+    VERSION="latest"
 }
 
 Write-Output "Build parameters:"
