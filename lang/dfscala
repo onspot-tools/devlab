@@ -1,0 +1,26 @@
+# -*- mode: dockerfile -*-
+#
+# The scala language
+#
+# Copyright (c) 2021 Arvind Devarajan
+# Licensed to you under the MIT License.
+# See the LICENSE file in the project root for more information.
+#
+FROM onspot/devlab-java:16.0-2.0
+
+USER root
+
+RUN curl -L https://github.com/sbt/sbt/releases/download/v1.5.2/sbt-1.5.2.tgz -o /opt/sbt.tgz
+RUN tar xzvf /opt/sbt.tgz -C /opt
+RUN rm -f /opt/sbt.tgz
+RUN echo "pupdate /opt/sbt/bin" >> /etc/zsh.zshrc.local
+
+USER dev
+WORKDIR /home/dev
+
+ENV PATH=/opt/sbt/bin:$PATH
+
+RUN curl -Lo coursier https://git.io/coursier-cli 
+RUN chmod +x /home/dev/coursier
+RUN /home/dev/coursier launch --fork almond  -M almond.ScalaKernel  -- --install --jupyter-path ${JUPYTER_DATA_DIR}/kernels
+RUN rm -f /home/dev/coursier
