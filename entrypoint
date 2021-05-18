@@ -81,6 +81,6 @@ if [[ -n "$http" || -n "$https" ]]; then
 fi
 
 # Create work directory
-mkdir -p work
+mkdir -p work && cd work
 
 exec env "$@"
