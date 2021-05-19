@@ -77,7 +77,9 @@ if ( $LANG -eq "base" ) {
 # to /opt/certs. This directory contains additional PEM certificates that may be needed to 
 # access the internet when done behind a corporate proxy.
 if ( Test-Path trustedcerts/* ) {
-    $MOUNT_CERTS = "--mount type=bind,src=${PWD}/trustedcerts,dst=/opt/certs"
+    # Docker desktop in windows platform is not recognising --mount type bind.
+    # We therefore will use the (old fashioned) -v for mounting trustedcerts only on windows.
+    $MOUNT_CERTS = "-v${PWD}/trustedcerts:/opt/certs"
 } else {
     $MOUNT_CERTS = ""
 }
