@@ -80,7 +80,5 @@ if [[ -n "$http" || -n "$https" ]]; then
     sudo zsh -c "sed -i 's@^NO_PROXY=.*@NO_PROXY=\"localhost, 127.0.0.1\"@' /etc/sysconfig/proxy"            
 fi
 
-# Create work directory
-mkdir -p work && cd work
-
-exec env "$@"
+# Change to work directory and execute the command line
+cd work && exec env "$@"
