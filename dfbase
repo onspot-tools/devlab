@@ -152,6 +152,7 @@ COPY licenses/ .licenses/
 
 # Create the script and the work directories
 RUN mkdir -p /opt/scripts
+RUN mkdir -p /home/dev/work
 
 # Finally, copy all the scripts in their location
 COPY ["starttmux", "entrypoint", "scripts/", "/opt/scripts/"]
