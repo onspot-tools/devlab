@@ -87,6 +87,15 @@ devlab is designed in such a way that you will be using it as a user `dev` with 
 
 **Use both of these with care**, as you can really damage your system with these.
 
+## Using devlab behind a proxy
+Use of devlab behind a proxy server is a fully supported scenario. Proxy supporting only NTLM authentication is also possible, but only with a NTLM proxy helper like [px](https://github.com/genotrance/px), [cntlm](http://cntlm.sourceforge.net/) or [ntlmaps](http://ntlmaps.sourceforge.net/).
+
+To use devlabs behind a proxy, before starting devlabs (via the devlab command explained above), make sure to define http_proxy and the https_proxy environment variables. That's it! Devlabs can now be used without any problems. Except when...
+
+If your corporate proxy is an MITM proxy, it is likely that your IT team provides you the "trusted certificates" that are installed in all PCs that go through this proxy. For using devlabs behind such a proxy, in addition to the environment variables mentioned above, you need to create a directory called `trustedcerts` in the same level as your devlab script, and drop all your trusted certificates (in PEM-encoded form) in this directory. Devlab automatically mounts this directory into the container and uses the certificates you've dropped in that directory to connect to the external world.
+
+Some language features (such as installing new packages / libraries for your language) need this external connection to work - and the combination of the environment variables and the `trustedcerts` directory will help in this connection behind your proxies.
+
 # Contributing to devlab
 Well, anybody is welcome to contributing to this project, and [All Contributors]() are recognised for their contribution! [Check out here](CONTRIBUTING.md) to know how you can contribute to making devlab the best place for developers to quickly get on to a development laboratory.
 
