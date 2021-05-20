@@ -10,8 +10,7 @@ FROM onspot/devlab:2.0
 
 USER root
 
-RUN zypper install -t pattern devel_C_C++
-RUN zypper install cmake gcc-c++
+RUN zypper -n install -t pattern devel_C_C++ && zypper -n install cmake gcc-c++
 RUN echo "pupdate ~/.cargo/bin" >> /etc/zsh.zshrc.local
 
 USER dev
@@ -25,5 +24,5 @@ ENV PATH=/home/dev/.cargo/bin:${PATH}
 ENV DEVLABLANG=${LANG}
 ENV DEVLABVER=${VER}
 
-RUN rustup component add rust-src
-RUN cargo install evcxr_jupyter
+RUN rustup component add rust-src && cargo install evcxr_jupyter && \
+    evcxr_jupyter --install
