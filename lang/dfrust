@@ -1,0 +1,27 @@
+# -*- mode: dockerfile -*-
+#
+# Rust language
+#
+# Copyright (c) <year-of-creation> <your-name>
+# Licensed to you under the MIT License.
+# See the LICENSE file in the project root for more information.
+#
+FROM onspot/devlab:2.0
+
+USER dev
+WORKDIR /home/dev
+
+RUN curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
+ENV PATH=/home/dev/.cargo/bin:${PATH}
+RUN echo "pupdate ~/.cargo/bin" >> /etc/zsh.zshrc.local
+
+# Create these variables so that programs running inside the containers know
+# what language they can make use of.
+ENV DEVLABLANG=${LANG}
+ENV DEVLABVER=${VER}
+
+#  rustup component add rust-src
+#  zypper install cmake
+# zypper install -t pattern devel_C_C++
+# zypper install gcc-c++
+# cargo install evcxr_jupyter
