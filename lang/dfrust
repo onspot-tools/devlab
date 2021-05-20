@@ -8,20 +8,22 @@
 #
 FROM onspot/devlab:2.0
 
+USER root
+
+RUN zypper install -t pattern devel_C_C++
+RUN zypper install cmake gcc-c++
+RUN echo "pupdate ~/.cargo/bin" >> /etc/zsh.zshrc.local
+
 USER dev
 WORKDIR /home/dev
 
 RUN curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
 ENV PATH=/home/dev/.cargo/bin:${PATH}
-RUN echo "pupdate ~/.cargo/bin" >> /etc/zsh.zshrc.local
 
 # Create these variables so that programs running inside the containers know
 # what language they can make use of.
 ENV DEVLABLANG=${LANG}
 ENV DEVLABVER=${VER}
 
-#  rustup component add rust-src
-#  zypper install cmake
-# zypper install -t pattern devel_C_C++
-# zypper install gcc-c++
-# cargo install evcxr_jupyter
+RUN rustup component add rust-src
+RUN cargo install evcxr_jupyter
