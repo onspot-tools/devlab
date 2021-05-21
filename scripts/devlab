@@ -28,6 +28,27 @@
 # 
 ###################################################
 
+usage() {
+echo -e "\033[0;31mInvalid command. Usage:\033[0m"
+cat << EOF 
+devlab [-l <lang>] [-v <version>] <command>
+
+Options:
+-l <lang> - Language devlab to be started. Default: Python and Julia
+-v <version> - Version of the language devlab to be started. Default: latest
+
+<command> can be one of:
+tmux - Starts a zsh shell with tmux
+lab - Starts the jupyter lab
+nb OR notebook - Starts the jupyter notebook
+notmux - Starts a zsh shell without tmux
+stop - Stops the started jupyter (lab or notebook)
+
+If no arguments are given, devlab starts a zsh shell with tmux.
+EOF
+    exit 0
+}
+
 # First, collect all options
 while getopts "l:v:" opt; do
     case ${opt} in
@@ -38,9 +59,7 @@ while getopts "l:v:" opt; do
             ver=${OPTARG}
             ;;
         *)
-            echo "Usage: `echo $0 | sed 's/\.\///'` [-l <lang>] [command]"
-            exit -1
-            ;;
+            usage;;
     esac
 done
 shift $(expr $OPTIND - 1 )
@@ -80,8 +99,9 @@ LANG=$lang
 VERSION=$ver
 
 # Run parameters
-HNAME=devlab
-JPYPORT=9000
+CNAME=devlab        # Name of the running devlab container
+JPYPORT=9000        # Port in which devlab runs (within the container)
+HPORT=${JPYPORT}    # Port in which devlab should run on the host machine
 
 # Adjust the image name based on the language name
 if [[ $LANG == "base" ]]; then
@@ -99,19 +119,54 @@ else
     MOUNT_CERTS=""
 fi
 
+# Run devlab based on the above configurations. 
+# The command to be run comes from the case-statement below.
+rundevlab() {
+    local cmd=$1
+    local mode=$2
+
+    docker run --rm -p ${HPORT}:${JPYPORT} ${mode} --mount src=devlab-${LANG}-${VERSION},dst=/home/dev ${MOUNT_CERTS} --name ${CNAME} --hostname localhost ${IMGNAME}:${VERSION} ${cmd}
+}
+
+# This function extracts jupyter information from the logs and prints the same on the console
+# to be used by the user. Note that this function also adjusts for the port number based on where
+# the devlab is listening.
+printjpyinfo() {
+    local logs=$1
+
+    if [[ -n $logs ]]; then
+        info=$(echo "$logs" | grep -v "^\[.*" | sed s/^\ \ \ \ // | sed s@:$JPYPORT/@:$HPORT/@)
+        echo "$info"
+    else 
+        echo 'Jupyter took unusually long time to start.'
+        echo 'Use "docker logs devlab" to get the URLs to access Jupyter.'
+
+        if [[ $JPYPORT -ne $HPORT ]]; then
+            echo "NOTE: *** In the URL shown, use $HPORT as the port number instead of $JPYPORT ***"
+        fi
+    fi
+}
+
+# Depending on what we want to start, set up docker parameters
 case $progarg in
 "notmux")
-    docker run --rm -p ${JPYPORT}:${JPYPORT} -it --mount src=devlab-${LANG}-${VERSION},dst=/home/dev ${MOUNT_CERTS} --name ${HNAME} --hostname ${HNAME} ${IMGNAME}:${VERSION} /bin/zsh
+    rundevlab "/bin/zsh" "-it" 
     ;;
-"jupyter")
+"lab")
     echo "Starting devlab..."
-    docker run --rm -p ${JPYPORT}:${JPYPORT} -d --mount src=devlab-${LANG}-${VERSION},dst=/home/dev ${MOUNT_CERTS} --name ${HNAME} --hostname localhost ${IMGNAME}:${VERSION} jupyter-lab
+    rundevlab "jupyter lab --no-browser" "-d"    
     sleep 2
-    docker logs ${HNAME}
-    echo 'If the URL for accessing your jupyter notebook is not shown above,'
-    echo 'just use "docker logs devlab" to get it. You may need to use it'
-    echo 'multiple times until you get the URL.'
+    printjpyinfo "$(docker logs ${CNAME} 2>&1)"
+    ;;
+"nb" | "notebook")
+    echo "Starting devlab notebook..."
+    rundevlab "jupyter notebook --no-browser" "-d"    
+    sleep 2
+    printjpyinfo "$(docker logs ${CNAME} 2>&1)"    
+    ;;    
+"tmux")
+    rundevlab "starttmux" "-it"
     ;;
 *)
-    docker run --rm -p ${JPYPORT}:${JPYPORT} -it --mount src=devlab-${LANG}-${VERSION},dst=/home/dev ${MOUNT_CERTS} --name ${HNAME} --hostname ${HNAME} ${IMGNAME}:${VERSION} starttmux
+    usage;;
 esac

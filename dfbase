@@ -115,6 +115,8 @@ RUN jupyter lab --generate-config
 
 # Change the location of the notebook directory
 RUN sed -i "s@.*c.NotebookApp.notebook_dir\ .*@c.NotebookApp.notebook_dir\ =\ \'/home/dev/work\'@" ${JUPYTER_CONFIG_DIR}/jupyter_notebook_config.py && \
+    sed -i "s@.*c.NotebookApp.port\ .*@c.NotebookApp.port\ =\ ${JPYPORT}@" ${JUPYTER_CONFIG_DIR}/jupyter_notebook_config.py && \
+    sed -i "s@.*c.NotebookApp.ip\ .*@c.NotebookApp.ip\ =\ \'*\'@" ${JUPYTER_CONFIG_DIR}/jupyter_notebook_config.py && \
     sed -i "s@.*c.LabApp.app_dir\ .*@c.LabApp.app_dir\ =\ \'${JUPYTERLAB_DIR}\'@" ${JUPYTER_CONFIG_DIR}/jupyter_lab_config.py && \
     sed -i "s@.*c.ServerApp.port\ .*@c.ServerApp.port\ =\ ${JPYPORT}@" ${JUPYTER_CONFIG_DIR}/jupyter_lab_config.py && \
     sed -i "s@.*c.ServerApp.ip\ .*@c.ServerApp.ip\ =\ \'*\'@" ${JUPYTER_CONFIG_DIR}/jupyter_lab_config.py
