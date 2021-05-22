@@ -16,9 +16,6 @@
 #
 # docker pull onspot/devlab-<lang>:<version>
 #
-# Author: arvindd
-# Created: 21.Apr.2021
-#
 # Copyright (c) 2021 Arvind Devarajan
 # Licensed to you under the MIT License.
 # See the LICENSE file in the project root for more information.
@@ -41,10 +38,10 @@ Options:
 tmux - Starts a zsh shell with tmux
 lab - Starts the jupyter lab
 nb OR notebook - Starts the jupyter notebook
-notmux - Starts a zsh shell without tmux
+shell - Starts a zsh shell without tmux
 stop - Stops the started jupyter (lab or notebook)
 
-If no arguments are given, devlab starts a zsh shell with tmux.
+If no command is given, default is "lab".
 EOF
     exit 0
 }
@@ -66,7 +63,7 @@ shift $(expr $OPTIND - 1 )
 
 # Fix all default arguments
 progarg=$1
-progarg=${progarg:=tmux}
+progarg=${progarg:=lab}
 lang=${lang:=base}
 ver=${ver:=latest}
 
@@ -149,7 +146,7 @@ printjpyinfo() {
 
 # Depending on what we want to start, set up docker parameters
 case $progarg in
-"notmux")
+"shell")
     rundevlab "/bin/zsh" "-it" 
     ;;
 "lab")

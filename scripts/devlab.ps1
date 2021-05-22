@@ -16,9 +16,6 @@
 #
 # docker pull onspot/devlab-<lang>:<version>
 #
-# Author: arvindd
-# Created: 21.Apr.2021
-#
 # Copyright (c) 2021 Arvind Devarajan
 # Licensed to you under the MIT License.
 # See the LICENSE file in the project root for more information.
@@ -31,7 +28,7 @@ Param(
   [String]$l = "base",
   [String]$v = "latest",
   [Parameter(Position = 0, ValueFromRemainingArguments = $true)]
-  [String]$progarg = "tmux"
+  [String]$progarg = "lab"
 )
 
 function Usage {
@@ -44,13 +41,20 @@ Options:
 -v <version> - Version of the language devlab to be started. Default: latest
 
 <command> can be one of:
+devlab [-l <lang>] [-v <version>] <command>
+
+Options:
+-l <lang> - Language devlab to be started. Default: Python and Julia
+-v <version> - Version of the language devlab to be started. Default: latest
+
+<command> can be one of:
 tmux - Starts a zsh shell with tmux
 lab - Starts the jupyter lab
 nb OR notebook - Starts the jupyter notebook
-notmux - Starts a zsh shell without tmux
+shell - Starts a zsh shell without tmux
 stop - Stops the started jupyter (lab or notebook)
 
-If no arguments are given, devlab starts a zsh shell with tmux.
+If no command is given, default is "lab".
 "@
 
 exit 0
@@ -132,7 +136,7 @@ function PrintJpyInfo($logs) {
 }
 
 switch ($progarg) {
-    "notmux" {
+    "shell" {
         RunDevlab "/bin/zsh" "-it" 
     }
     "lab" {

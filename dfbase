@@ -2,8 +2,8 @@
 #
 # Base dockerfile
 #
-# This dockerfile is to build the basic opensuse/leap image based on which
-# all the other application images will be built.
+# This dockerfile is to build the basic devlab with Python, Julia and
+# the Jupyterlab.
 #
 # To build all images, use the build script: `build` in this directory.
 #
@@ -12,24 +12,11 @@
 # See the LICENSE file in the project root for more information.
 #
 
-FROM opensuse/leap:15.2
-LABEL Name="Base devlab image"
-LABEL Description="This image is the base for all the other devlabs"
-
-# All zypper commands have a -n for making them non-interactive
-# First, make sure we have the latest repos and updates for
-# all the packages installed.
-# Since we will have miktex, we need to install the gpg keys
-RUN zypper -n refresh && zypper -n update && \
-    zypper -n install timezone neovim zsh \
-              iputils unzip tar gzip bzip2 xz which iproute2 \
-              sudo wget curl git tmux direnv python3 python3-pip && \
-              rpm --import "https://keyserver.ubuntu.com/pks/lookup?op=get&search=0xD6BC243565B2087BC3F897C9277A7293F59E4889" && \
-              curl -L -o /etc/zypp/repos.d/miktex.repo https://miktex.org/download/opensuse/15/miktex.repo && \
-              zypper -n install pandoc miktex
-
-# Make sure that dates are correct within the container
-RUN rm -f /etc/localtime /etc/localtime.rpmsave && ln -s /usr/share/zoneinfo/Asia/Kolkata /etc/localtime
+# We pull from OpenSUSE/Leap 15.2, but also make sure that we get the same image everytime we
+# build this devlab-base.
+FROM onspot/osbase:1.0
+LABEL Name="OpenSUSE base image"
+LABEL Description="This image is the operating system base for all the other devlabs"
 
 # Add all skel files so that any users created will get them
 RUN mkdir -p /etc/skel/.config/pip/
@@ -52,11 +39,7 @@ RUN echo "dev ALL=(ALL) NOPASSWD:SETENV: /usr/bin/zypper,/bin/zsh" > /etc/sudoer
 RUN mkdir -p /opt && chown dev:users /opt
 
 # Get the latest pip
-RUN /usr/bin/python3 -m pip install --upgrade pip
-
-# Copy and extract emacs 27.1
-COPY tarzips/emacs.tgz /opt/
-RUN tar xzvf /opt/emacs.tgz && rm /opt/emacs.tgz
+# RUN /usr/bin/python3 -m pip install --upgrade pip
 
 # Some common aliases and functions to be added into /etc/zsh.zshrc.local
 COPY zsh.zshrc.local /etc/
@@ -64,11 +47,15 @@ COPY zsh.zshrc.local /etc/
 # Now, install everything else with the user's id
 USER dev
 WORKDIR /home/dev
+ENV HOME=/home/dev
 
-# We will create a .zshrc file here: any existing .zshrc will be overwritten
-# This allows for setting of environment variables on a per-directory basis
-# Also, environment variables set in a parent directory is accessible in all
-# its sub-directories.
+# Install conda, python and pip
+RUN mkdir -p ${HOME}/.tmpdir && \
+    curl -sSL https://repo.anaconda.com/miniconda/Miniconda3-py39_4.9.2-Linux-x86_64.sh -o ${HOME}/.tmpdir/Miniconda3-py39_4.9.2-Linux-x86_64.sh && \
+    chmod +x /home/dev/.tmpdir/Miniconda3-py39_4.9.2-Linux-x86_64.sh && \
+    ${HOME}/.tmpdir/Miniconda3-py39_4.9.2-Linux-x86_64.sh -b -p ${HOME}/.jupyter && rm -rf ${HOME}/.tmpdir 
+
+ENV PATH=${HOME}/.jupyter/bin:${PATH}
     
 # Add node for jupyter lab's extensions
 RUN curl https://nodejs.org/dist/v16.0.0/node-v16.0.0-linux-x64.tar.xz -o /opt/node.tar.xz && \ 
@@ -85,10 +72,10 @@ RUN curl https://julialang-s3.julialang.org/bin/linux/x64/1.6/julia-1.6.1-linux-
     rm -f /opt/julia.tar.gz && touch /opt/julia/v1.6.1
 
 # Finish up mitex installation, enabling auto package install
-RUN miktexsetup finish && initexmf --set-config-value "[MPM]AutoInstall=1"
+# RUN miktexsetup finish && initexmf --set-config-value "[MPM]AutoInstall=1"
 
 # Install Jupyter in /home/dev/.jupyter
-ENV JUPYTER_HOME=/home/dev/.jupyter
+ENV JUPYTER_HOME=${HOME}/.jupyter
 ENV JUPYTER_CONFIG_DIR=${JUPYTER_HOME}/config
 ENV JUPYTER_DATA_DIR=${JUPYTER_HOME}/data
 ENV JUPYTER_PATH=${JUPYTER_DATA_DIR}
@@ -96,64 +83,72 @@ ENV JUPYTER_RUNTIME_DIR=${JUPYTER_HOME}/runtime
 ENV JUPYTERLAB_DIR=${JUPYTER_HOME}/srv/share/jupyter/lab
 ENV JUPYTERLAB_WORKSPACES_DIR=${JUPYTERLAB_DIR}/workspaces
 ENV PYTHONPATH=${PYTHONPATH}:${JUPYTER_HOME}/srv
-ENV PATH=/opt/emacs/bin:/opt/node/bin:${JUPYTER_HOME}/srv/bin:/opt/julia/bin:/opt/scripts:${PATH}
-ENV PATH=/home/dev/bin:/home/dev/.local/bin:${PATH}
+ENV PATH=/opt/node/bin:${JUPYTER_HOME}/srv/bin:/opt/julia/bin:/opt/scripts:${PATH}
+ENV PATH=${HOME}/bin:${HOME}/.local/bin:${PATH}
 
-RUN pip3 install --target ${JUPYTER_HOME}/srv jupyterlab==3.0.14 && pip3 install nbconvert[webpdf]
+# RUN pip3 install --target ${JUPYTER_HOME}/srv jupyterlab==3.0.14 && \
+#     pip3 install --target ${JUPYTER_HOME}/srv RISE && \
+#     pip3 install --target ${JUPYTER_HOME}/srv nbconvert[webpdf]
 
-# nbconvert installations do not install the templates at the right place
-# We install them in the right place now.
-RUN mkdir -p ${JUPYTER_HOME}/data/nbconvert/templates/ && \
-    mv ${JUPYTER_HOME}/srv/share/jupyter/nbconvert/templates/* ${JUPYTER_HOME}/data/nbconvert/templates/
+# Activate the conda environment and install jupyter
 
-# Generate Jupyter configuration for notebooks
-# We will make jupyter listen on a specific port number.
-# JPYPORT is passed to us as a build-arg
-ARG JPYPORT
-RUN jupyter notebook --generate-config
-RUN jupyter lab --generate-config
+# RUN conda install -y -c conda-forge jupyterlab==3.0.14 && \
+#     conda install -y -c conda-forge rise=5.7.1 && \
+#     conda install -y -c conda-forge "nbconvert[webpdf]"
 
-# Change the location of the notebook directory
-RUN sed -i "s@.*c.NotebookApp.notebook_dir\ .*@c.NotebookApp.notebook_dir\ =\ \'/home/dev/work\'@" ${JUPYTER_CONFIG_DIR}/jupyter_notebook_config.py && \
-    sed -i "s@.*c.NotebookApp.port\ .*@c.NotebookApp.port\ =\ ${JPYPORT}@" ${JUPYTER_CONFIG_DIR}/jupyter_notebook_config.py && \
-    sed -i "s@.*c.NotebookApp.ip\ .*@c.NotebookApp.ip\ =\ \'*\'@" ${JUPYTER_CONFIG_DIR}/jupyter_notebook_config.py && \
-    sed -i "s@.*c.LabApp.app_dir\ .*@c.LabApp.app_dir\ =\ \'${JUPYTERLAB_DIR}\'@" ${JUPYTER_CONFIG_DIR}/jupyter_lab_config.py && \
-    sed -i "s@.*c.ServerApp.port\ .*@c.ServerApp.port\ =\ ${JPYPORT}@" ${JUPYTER_CONFIG_DIR}/jupyter_lab_config.py && \
-    sed -i "s@.*c.ServerApp.ip\ .*@c.ServerApp.ip\ =\ \'*\'@" ${JUPYTER_CONFIG_DIR}/jupyter_lab_config.py
+# # nbconvert installations do not install the templates at the right place
+# # We install them in the right place now.
+# RUN mkdir -p ${JUPYTER_HOME}/data/nbconvert/templates/ && \
+#     mv ${JUPYTER_HOME}/srv/share/jupyter/nbconvert/templates/* ${JUPYTER_HOME}/data/nbconvert/templates/
 
-# Install the IJulia package to use Julia with Jupyter
-RUN julia -e 'using Pkg; Pkg.add("IJulia");'
+# # Generate Jupyter configuration for notebooks
+# # We will make jupyter listen on a specific port number.
+# # JPYPORT is passed to us as a build-arg
+# ARG JPYPORT
+# RUN jupyter notebook --generate-config
+# RUN jupyter lab --generate-config
 
-# Add SSL certificates
-# RUN mkdir -p /opt/ssl
-# COPY --chown=dev:users ["localhost.key", "localhost.crt", "/opt/ssl/"]
-# RUN sed -i "s@.*c.ServerApp.certfile\ .*@c.ServerApp.certfile\ =\ \'/opt/ssl/localhost.crt\'@" ${JUPYTER_CONFIG_DIR}/jupyter_lab_config.py
-# RUN sed -i "s@.*c.ServerApp.keyfile\ .*@c.ServerApp.keyfile\ =\ \'/opt/ssl/localhost.key\'@" ${JUPYTER_CONFIG_DIR}/jupyter_lab_config.py
-# Install Oh-my-zsh
-# RUN sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)" "" --keep-zshrc
-# ---------------
-# Typical way of using curl/wget from raw github does not work sometimes if github raw access is
-# having a problem. Hence we go another way: clone the github repo, and then execute install from there.
-RUN git clone https://github.com/ohmyzsh/ohmyzsh.git tmpozsh && tmpozsh/tools/install.sh --keep-zshrc && \
-    rm -rf tmpozsh && sed -i 's/ZSH_THEME=.*/ZSH_THEME=\"agnoster\"/' ~/.zshrc
+# # Change the location of the notebook directory
+# RUN sed -i "s@.*c.NotebookApp.notebook_dir\ .*@c.NotebookApp.notebook_dir\ =\ \'/home/dev/work\'@" ${JUPYTER_CONFIG_DIR}/jupyter_notebook_config.py && \
+#     sed -i "s@.*c.NotebookApp.port\ .*@c.NotebookApp.port\ =\ ${JPYPORT}@" ${JUPYTER_CONFIG_DIR}/jupyter_notebook_config.py && \
+#     sed -i "s@.*c.NotebookApp.ip\ .*@c.NotebookApp.ip\ =\ \'*\'@" ${JUPYTER_CONFIG_DIR}/jupyter_notebook_config.py && \
+#     sed -i "s@.*c.LabApp.app_dir\ .*@c.LabApp.app_dir\ =\ \'${JUPYTERLAB_DIR}\'@" ${JUPYTER_CONFIG_DIR}/jupyter_lab_config.py && \
+#     sed -i "s@.*c.ServerApp.port\ .*@c.ServerApp.port\ =\ ${JPYPORT}@" ${JUPYTER_CONFIG_DIR}/jupyter_lab_config.py && \
+#     sed -i "s@.*c.ServerApp.ip\ .*@c.ServerApp.ip\ =\ \'*\'@" ${JUPYTER_CONFIG_DIR}/jupyter_lab_config.py
 
-# If sourcing our special .zshrc is not already in there, source our .zshrc.devlab in .zshrc
-COPY zshrc.home.devlab ./.zshrc.home.devlab
-RUN if ! grep -q ".zshrc.home.devlab" ~/.zshrc; then \
-        echo ". ~/.zshrc.home.devlab" >> ~/.zshrc; \ 
-        echo "if [[ \"\$TMUX_PANE\" == \"%0\" ]]; then cat ~/.licenses/LICENSE && echo && echo; fi" >> ~/.zshrc; \ 
-    fi
+# # Install the IJulia package to use Julia with Jupyter
+# RUN julia -e 'using Pkg; Pkg.add("IJulia");'
 
-# Create these variables so that programs running inside the containers know
-# what language they can make use of.
-ENV DEVLABLANG=${LANG}
+# # Add SSL certificates
+# # RUN mkdir -p /opt/ssl
+# # COPY --chown=dev:users ["localhost.key", "localhost.crt", "/opt/ssl/"]
+# # RUN sed -i "s@.*c.ServerApp.certfile\ .*@c.ServerApp.certfile\ =\ \'/opt/ssl/localhost.crt\'@" ${JUPYTER_CONFIG_DIR}/jupyter_lab_config.py
+# # RUN sed -i "s@.*c.ServerApp.keyfile\ .*@c.ServerApp.keyfile\ =\ \'/opt/ssl/localhost.key\'@" ${JUPYTER_CONFIG_DIR}/jupyter_lab_config.py
+# # Install Oh-my-zsh
+# # RUN sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)" "" --keep-zshrc
+# # ---------------
+# # Typical way of using curl/wget from raw github does not work sometimes if github raw access is
+# # having a problem. Hence we go another way: clone the github repo, and then execute install from there.
+# RUN git clone https://github.com/ohmyzsh/ohmyzsh.git tmpozsh && tmpozsh/tools/install.sh --keep-zshrc && \
+#     rm -rf tmpozsh && sed -i 's/ZSH_THEME=.*/ZSH_THEME=\"agnoster\"/' ~/.zshrc
+
+# # If sourcing our special .zshrc is not already in there, source our .zshrc.devlab in .zshrc
+# COPY zshrc.home.devlab ./.zshrc.home.devlab
+# RUN if ! grep -q ".zshrc.home.devlab" ~/.zshrc; then \
+#         echo ". ~/.zshrc.home.devlab" >> ~/.zshrc; \ 
+#         echo "if [[ \"\$TMUX_PANE\" == \"%0\" ]]; then cat ~/.licenses/LICENSE && echo && echo; fi" >> ~/.zshrc; \ 
+#     fi
+
+# # Create these variables so that programs running inside the containers know
+# # what language they can make use of.
+# ENV DEVLABLANG=${LANG}
 
 EXPOSE ${JPYPORT}
 
-# Copy all license files in the container to be legally compliant
+# # Copy all license files in the container to be legally compliant
 COPY licenses/ .licenses/
 
-# Create the script and the work directories
+# # Create the script and the work directories
 RUN mkdir -p /opt/scripts
 RUN mkdir -p /home/dev/work
 

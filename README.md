@@ -105,6 +105,17 @@ If your corporate proxy is an MITM proxy, it is likely that your IT team provide
 
 Some language features (such as installing new packages / libraries for your language) need this external connection to work - and the combination of the environment variables and the `trustedcerts` directory will help in this connection behind your proxies.
 
+## Using Visual Studio Code with devlab
+Devlab's tmux configurarions come with a neat trick to split the terminal pane into top and bottom panes when connected from [VSCode](https://code.visualstudio.com/). To help devlab to detect its usage from within VSCode, add this to your VSCode settings:
+
+```
+   "terminal.integrated.env.linux": {
+       ... other existing settings ...
+
+        "VSCODEENV":"true"
+    }
+```
+
 ## Running devlab on a port different from 9000
 devlab runs on TCP port 9000 by default. If you want to change this, you need to edit the `devlab` script (in Linux / Unix, on Windows, this is the `devlap.ps1`). Search for the variable HPORT, and change that to what you would like devlab to run on.
 # Contributing to devlab
