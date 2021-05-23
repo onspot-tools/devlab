@@ -2,14 +2,11 @@
 #
 # dockerfile for java
 #
-# Author: arvindd
-# Created: 13.May.2021
-#
 # Copyright (c) 2021 Arvind Devarajan
 # Licensed to you under the MIT License.
 # See the LICENSE file in the project root for more information.
 #
-FROM onspot/devlab:2.0
+FROM onspot/devlab:3.0
 
 LABEL Name="Java devlab"
 LABEL Description=""
