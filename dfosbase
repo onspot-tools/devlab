@@ -1,0 +1,41 @@
+# -*- mode: dockerfile -*-
+#
+# Minimal dockerfile
+#
+# This dockerfile is to build the basic opensuse/leap image based on which
+# all the other images will be built.
+#
+# To build the base OS image, use:
+#
+# docker build -t onspot/osbase -f dfosbase
+#
+# Copyright (c) 2021 Arvind Devarajan
+# Licensed to you under the MIT License.
+# See the LICENSE file in the project root for more information.
+#
+# We pull from OpenSUSE/Leap 15.2, but also make sure that we get the same image everytime we
+# build this devlab-base.
+FROM opensuse/leap:15.2@sha256:e9a9571289c22c0ebda5f46bcbc86e3ec035e090858bb4a03b2a995e7a662c64
+LABEL Name="Base devlab image"
+LABEL Description="This image is the base for all the other devlabs"
+
+# All zypper commands have a -n for making them non-interactive
+# First, make sure we have the latest repos and updates for
+# all the packages installed.
+# Texlive takes a long time to build. It is best to keep that in a separate
+# layer so that it does not need to be installed again and again
+RUN zypper -n refresh && zypper -n update && zypper -n install texlive-scheme-full
+RUN zypper -n install timezone neovim zsh \
+              iputils unzip tar gzip bzip2 xz which iproute2 \
+              sudo wget curl git tmux direnv pandoc
+
+# Make sure that dates are correct within the container
+RUN rm -f /etc/localtime /etc/localtime.rpmsave && ln -s /usr/share/zoneinfo/Asia/Kolkata /etc/localtime
+
+# Copy and extract emacs 27.1
+COPY tarzips/emacs.tgz /opt/
+RUN tar xzvf /opt/emacs.tgz && rm /opt/emacs.tgz
+
+ENV PATH=/opt/emacs/bin:${PATH}
+
+ENTRYPOINT [ "/bin/zsh" ]
