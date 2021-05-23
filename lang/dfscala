@@ -6,7 +6,7 @@
 # Licensed to you under the MIT License.
 # See the LICENSE file in the project root for more information.
 #
-FROM onspot/devlab-java:16.0-2.0
+FROM onspot/devlab-java:16.0-3.0
 
 USER root
 
@@ -22,5 +22,5 @@ ENV PATH=/opt/sbt/bin:$PATH
 
 RUN curl -Lo coursier https://git.io/coursier-cli 
 RUN chmod +x /home/dev/coursier
-RUN /home/dev/coursier launch --fork almond  -M almond.ScalaKernel  -- --install --jupyter-path ${JUPYTER_DATA_DIR}/kernels
+RUN /home/dev/coursier launch --fork almond  -M almond.ScalaKernel  -- --install --jupyter-path /home/dev/.jupyter/share/kernels
 RUN rm -f /home/dev/coursier
