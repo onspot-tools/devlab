@@ -7,9 +7,6 @@
 #
 # curl -sSL https://raw.githubusercontent.com/onspot-tools/devlab/master/scripts/install.sh | sh
 #
-# Author: arvindd
-# Created: 10.May.2021
-#
 # Copyright (c) 2021 Arvind Devarajan
 # Licensed to you under the MIT License.
 # See the LICENSE file in the project root for more information.

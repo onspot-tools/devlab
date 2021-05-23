@@ -16,9 +16,6 @@
 #
 # docker pull onspot/devlab-<lang>:<version>
 #
-# Author: arvindd
-# Created: 21.Apr.2021
-#
 # Copyright (c) 2021 Arvind Devarajan
 # Licensed to you under the MIT License.
 # See the LICENSE file in the project root for more information.
@@ -31,21 +28,55 @@ Param(
   [String]$l = "base",
   [String]$v = "latest",
   [Parameter(Position = 0, ValueFromRemainingArguments = $true)]
-  [String]$progarg = "tmux"
+  [String]$progarg = "lab"
 )
+
+function Usage {
+Write-Host "Invalid command. Usage:" -foreground red
+@"
+devlab [-l <lang>] [-v <version>] <command>
+
+Options:
+-l <lang> - Language devlab to be started. Default: Python and Julia
+-v <version> - Version of the language devlab to be started. Default: latest
+
+<command> can be one of:
+devlab [-l <lang>] [-v <version>] <command>
+
+Options:
+-l <lang> - Language devlab to be started. Default: Python and Julia
+-v <version> - Version of the language devlab to be started. Default: latest
+
+<command> can be one of:
+tmux - Starts a zsh shell with tmux
+lab - Starts the jupyter lab
+nb OR notebook - Starts the jupyter notebook
+shell - Starts a zsh shell without tmux
+stop - Stops the started jupyter (lab or notebook)
+
+If no command is given, default is "lab".
+"@
+
+exit 0
+}
 
 # First, check if we are already running the devlab
 $cnt = docker ps --filter "name=devlab" | Measure-Object -line
 if ( $cnt.Lines -eq 2 ) {
-    # devlab is already running; so either stop it or 
-    # ask the user to stop it.
-    if ( $progarg -eq "stop" ) {
-        Write-Output "Stopped"
+    # devlab is already running; we only allow to shell into it
+    # or stop it if asked for. For any other command, ask the user
+    # to stop it.
+    if ( $progarg -eq "shell" ) {
+        docker exec -it devlab /bin/zsh
+        exit 0
+    } elseif ( $progarg -eq "stop" ) {
+        Write-Host -NoNewline "Stopped "
         docker stop devlab
         exit 0
     } else {
-        Write-Output "devlab is already running."
-        Write-Output "Stop it with 'devlab stop' before starting again."
+        Write-Output "devlab is already running." -foreground red
+        Write-Output "You can shell into it with 'devlab shell'."
+        Write-Output "OR stop it with 'devlab stop' before starting again."
         exit 1
     }
 } else {
@@ -63,8 +94,9 @@ $LANG = "$l"
 $VERSION = "$v"
 
 # Run parameters
-$HNAME = "devlab"
-$JPYPORT = 9000
+$CNAME = "devlab"     # Name of the running devlab container
+$JPYPORT = 9000       # Port in which devlab runs (within the container)
+$HPORT=${JPYPORT}     # Port in which devlab should run on the host machine
 
 # Adjust the image name based on the language name
 if ( $LANG -eq "base" ) {
@@ -84,20 +116,50 @@ if ( Test-Path trustedcerts/* ) {
     $MOUNT_CERTS = ""
 }
 
-switch ($progarg) {
-    notmux {
-        docker run --rm -p ${JPYPORT}:${JPYPORT} -it --mount src=devlab-${LANG}-${VERSION},dst=/home/dev ${MOUNT_CERTS} --name ${HNAME} --hostname ${HNAME} ${IMGNAME}:${VERSION} /bin/zsh    
-    }
-    jupyter {
-        Write-Output "Starting devlab..."    
-        docker run --rm -p ${JPYPORT}:${JPYPORT} -d --mount src=devlab-${LANG}-${VERSION},dst=/home/dev ${MOUNT_CERTS} --name ${HNAME} --hostname localhost ${IMGNAME}:${VERSION} jupyter-lab
-    	Start-Sleep -Seconds 2
-    	docker logs ${HNAME}
-        Write-Output 'If the URL for accessing your jupyter notebook is not shown above,'
-        Write-Output 'just use "docker logs devlab" to get it. You may need to use it'
-        Write-Output 'multiple times until you get the URL.'
+# Run devlab based on the above configurations. 
+# The command to be run comes from the case-statement below.
+function RunDevlab($cmd, $mode) {
+    $args = "run --rm -p ${HPORT}:${JPYPORT} ${mode} --mount src=devlab-${LANG}-${VERSION},dst=/home/dev ${MOUNT_CERTS} --name ${CNAME} --hostname localhost ${IMGNAME}:${VERSION} ${cmd}"
+    & docker $args.split()
+}
+
+# This function extracts jupyter information from the logs and prints the same on the console
+# to be used by the user. Note that this function also adjusts for the port number based on where
+# the devlab is listening.
+function PrintJpyInfo($logs) {
+    if ( $logs ) {
+        $info = $logs | Select-String -notmatch "^\[" | ForEach-Object { $_ -replace "^\ \ \ \ ","" -replace ":${JPYPORT}/",":${HPORT}/" }
+        Write-Output ($info -join "`r`n" | out-string)
+    } else {
+        Write-Output 'Jupyter took unusually longer time to start.'
+        Write-Output 'Use "docker logs devlab" to get the URLs to access Jupyter.'
+
+        if ( $JPYPORT -ne $HPORT ) {
+            Write-Output "NOTE: *** In the URL, use $HPORT as the port number instead of $JPYPORT ***"
         }
+    }
+}
+
+switch ($progarg) {
+    "shell" {
+        RunDevlab "/bin/zsh" "-it" 
+    }
+    "lab" {
+        Write-Output "Starting devlab..."    
+        RunDevlab "jupyter lab --no-browser" "-d"                    
+    	Start-Sleep -Seconds 2
+        PrintJpyInfo $(docker logs ${CNAME} 2>&1)
+    }
+    {($_ -eq "nb") -or ($_ -eq "notebook")} {
+        Write-Output "Starting notebook..."    
+        RunDevlab "jupyter notebook --no-browser" "-d"            
+    	Start-Sleep -Seconds 2
+        PrintJpyInfo $(docker logs ${CNAME} 2>&1)        
+    }        
+    "tmux" {
+        RunDevlab "starttmux" "-it"
+    }
     Default {
-        docker run --rm -p ${JPYPORT}:${JPYPORT} -it --mount src=devlab-${LANG}-${VERSION},dst=/home/dev ${MOUNT_CERTS} --name ${HNAME} --hostname ${HNAME} ${IMGNAME}:${VERSION} starttmux
+        Usage
     }
 }
