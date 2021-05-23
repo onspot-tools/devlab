@@ -72,7 +72,7 @@ fi
 
 VERSION=${VERSION:=latest}
 
-if [[ $lasttag != *"$lang"* ]]; then
+if [[ $lasttag != "$lang"* ]]; then
     VERSION="latest"
 fi    
 

@@ -31,6 +31,7 @@ pupdate ~/.jupyter/srv/bin
 pupdate /opt/julia/bin
 pupdate ~/bin
 pupdate ~/.local/bin
+pupdate ~/.miniconda3/bin
 alias rs='sudo -H zsh'
 alias zypper='sudo zypper'
 alias e='emacs -nw'
@@ -39,3 +40,4 @@ alias vim=nvim
 alias rm='rm -i'
 alias cp='cp -i'
 alias mv='mv -i'
+alias python='/usr/bin/python3'
