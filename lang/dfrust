@@ -6,7 +6,7 @@
 # Licensed to you under the MIT License.
 # See the LICENSE file in the project root for more information.
 #
-FROM onspot/devlab:2.0
+FROM onspot/devlab:3.0
 
 USER root
 
@@ -22,7 +22,6 @@ ENV PATH=/home/dev/.cargo/bin:${PATH}
 # Create these variables so that programs running inside the containers know
 # what language they can make use of.
 ENV DEVLABLANG=${LANG}
-ENV DEVLABVER=${VER}
 
 RUN rustup component add rust-src && cargo install evcxr_jupyter && \
     evcxr_jupyter --install
