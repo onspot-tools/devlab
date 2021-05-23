@@ -70,15 +70,20 @@ ver=${ver:=latest}
 # Check if we are already running the devlab
 docker ps --filter "name=devlab" | tail -1 | grep -q devlab
 if [[ $? -eq 0 ]]; then
-    # devlab is already running; so either stop it or 
-    # ask the user to stop it.
-    if [[ $progarg == "stop" ]]; then
-        echo "Stopped"
+    # devlab is already running; we only allow to shell into it
+    # or stop it if asked for. For any other command, ask the user
+    # to stop it.
+    if [[ $progarg == "shell" ]]; then
+        docker exec -it devlab /bin/zsh
+        exit 0
+    elif [[ $progarg == "stop" ]]; then
+        echo -n "Stopped "
         docker stop devlab
         exit 0
     else
-        echo "devlab is already running."
-        echo "Stop it with 'devlab stop' before starting again."
+        echo -e "\033[0;31mdevlab is already running.\033[0m"
+        echo "You can shell into it with 'devlab shell'."
+        echo "OR stop it with 'devlab stop' before starting again."
         exit 1
     fi
 else

@@ -119,7 +119,7 @@ Devlab's tmux configurarions come with a neat trick to split the terminal pane i
 ## Running devlab on a port different from 9000
 devlab runs on TCP port 9000 by default. If you want to change this, you need to edit the `devlab` script (in Linux / Unix, on Windows, this is the `devlap.ps1`). Search for the variable HPORT, and change that to what you would like devlab to run on.
 # Contributing to devlab
-Well, anybody is welcome to contributing to this project, and [All Contributors]() are recognised for their contribution! [Check out here](CONTRIBUTING.md) to know how you can contribute to making devlab the best place for developers to quickly get on to a development laboratory.
+Well, anybody is welcome to contributing to this project, and [All Contributors](https://allcontributors.org/) are recognised for their contribution! [Check out here](CONTRIBUTING.md) to know how you can contribute to making devlab the best place for developers to quickly get on to a development laboratory.
 
 # Contributors ✨
 

@@ -14,8 +14,8 @@
 
 # We pull from OpenSUSE/Leap 15.2, but also make sure that we get the same image everytime we
 # build this devlab-base.
-FROM onspot/osbase:1.0
-LABEL Name="OpenSUSE base image"
+FROM onspot/osbase
+LABEL Name="Devlab base image"
 LABEL Description="This image is the operating system base for all the other devlabs"
 
 # Add all skel files so that any users created will get them
@@ -76,25 +76,21 @@ RUN curl https://julialang-s3.julialang.org/bin/linux/x64/1.6/julia-1.6.1-linux-
 
 # Install Jupyter in /home/dev/.jupyter
 ENV JUPYTER_HOME=${HOME}/.jupyter
-ENV JUPYTER_CONFIG_DIR=${JUPYTER_HOME}/config
-ENV JUPYTER_DATA_DIR=${JUPYTER_HOME}/data
-ENV JUPYTER_PATH=${JUPYTER_DATA_DIR}
-ENV JUPYTER_RUNTIME_DIR=${JUPYTER_HOME}/runtime
-ENV JUPYTERLAB_DIR=${JUPYTER_HOME}/srv/share/jupyter/lab
-ENV JUPYTERLAB_WORKSPACES_DIR=${JUPYTERLAB_DIR}/workspaces
-ENV PYTHONPATH=${PYTHONPATH}:${JUPYTER_HOME}/srv
-ENV PATH=/opt/node/bin:${JUPYTER_HOME}/srv/bin:/opt/julia/bin:/opt/scripts:${PATH}
+# ENV JUPYTER_CONFIG_DIR=${JUPYTER_HOME}/config
+# ENV JUPYTER_DATA_DIR=${JUPYTER_HOME}/data
+# ENV JUPYTER_PATH=${JUPYTER_DATA_DIR}
+# ENV JUPYTER_RUNTIME_DIR=${JUPYTER_HOME}/runtime
+ENV JUPYTERLAB_DIR=${JUPYTER_HOME}/share/jupyter/lab
+# ENV JUPYTERLAB_WORKSPACES_DIR=${JUPYTERLAB_DIR}/workspaces
+# ENV PYTHONPATH=${PYTHONPATH}:${JUPYTER_HOME}/srv
+# ENV PATH=/opt/node/bin:${JUPYTER_HOME}/srv/bin:/opt/julia/bin:/opt/scripts:${PATH}
+ENV PATH=/opt/node/bin:/opt/julia/bin:/opt/scripts:${PATH}
 ENV PATH=${HOME}/bin:${HOME}/.local/bin:${PATH}
 
-# RUN pip3 install --target ${JUPYTER_HOME}/srv jupyterlab==3.0.14 && \
-#     pip3 install --target ${JUPYTER_HOME}/srv RISE && \
-#     pip3 install --target ${JUPYTER_HOME}/srv nbconvert[webpdf]
-
-# Activate the conda environment and install jupyter
-
-# RUN conda install -y -c conda-forge jupyterlab==3.0.14 && \
-#     conda install -y -c conda-forge rise=5.7.1 && \
-#     conda install -y -c conda-forge "nbconvert[webpdf]"
+# Install jupyter, jupyterlab and the RISE extension
+RUN conda install -y -c conda-forge jupyterlab==3.0.14 && \
+    conda install -y -c conda-forge rise=5.7.1 && \
+    conda install -y -c conda-forge "nbconvert[webpdf]"
 
 # # nbconvert installations do not install the templates at the right place
 # # We install them in the right place now.
@@ -104,9 +100,9 @@ ENV PATH=${HOME}/bin:${HOME}/.local/bin:${PATH}
 # # Generate Jupyter configuration for notebooks
 # # We will make jupyter listen on a specific port number.
 # # JPYPORT is passed to us as a build-arg
-# ARG JPYPORT
-# RUN jupyter notebook --generate-config
-# RUN jupyter lab --generate-config
+ARG JPYPORT
+RUN jupyter notebook --generate-config
+RUN jupyter lab --generate-config
 
 # # Change the location of the notebook directory
 # RUN sed -i "s@.*c.NotebookApp.notebook_dir\ .*@c.NotebookApp.notebook_dir\ =\ \'/home/dev/work\'@" ${JUPYTER_CONFIG_DIR}/jupyter_notebook_config.py && \
@@ -116,8 +112,16 @@ ENV PATH=${HOME}/bin:${HOME}/.local/bin:${PATH}
 #     sed -i "s@.*c.ServerApp.port\ .*@c.ServerApp.port\ =\ ${JPYPORT}@" ${JUPYTER_CONFIG_DIR}/jupyter_lab_config.py && \
 #     sed -i "s@.*c.ServerApp.ip\ .*@c.ServerApp.ip\ =\ \'*\'@" ${JUPYTER_CONFIG_DIR}/jupyter_lab_config.py
 
-# # Install the IJulia package to use Julia with Jupyter
-# RUN julia -e 'using Pkg; Pkg.add("IJulia");'
+RUN sed -i "s@.*c.NotebookApp.notebook_dir\ .*@c.NotebookApp.notebook_dir\ =\ \'/home/dev/work\'@" ${JUPYTER_HOME}/jupyter_notebook_config.py && \
+    sed -i "s@.*c.NotebookApp.port\ .*@c.NotebookApp.port\ =\ ${JPYPORT}@" ${JUPYTER_HOME}/jupyter_notebook_config.py && \
+    sed -i "s@.*c.NotebookApp.ip\ .*@c.NotebookApp.ip\ =\ \'*\'@" ${JUPYTER_HOME}/jupyter_notebook_config.py && \
+    sed -i "s@.*c.LabApp.app_dir\ .*@c.LabApp.app_dir\ =\ \'${JUPYTERLAB_DIR}\'@" ${JUPYTER_HOME}/jupyter_lab_config.py && \
+    sed -i "s@.*c.ServerApp.port\ .*@c.ServerApp.port\ =\ ${JPYPORT}@" ${JUPYTER_HOME}/jupyter_lab_config.py && \
+    sed -i "s@.*c.ServerApp.ip\ .*@c.ServerApp.ip\ =\ \'*\'@" ${JUPYTER_HOME}/jupyter_lab_config.py
+
+
+# Install the IJulia package to use Julia with Jupyter
+RUN julia -e 'using Pkg; Pkg.add("IJulia");'
 
 # # Add SSL certificates
 # # RUN mkdir -p /opt/ssl
@@ -129,19 +133,19 @@ ENV PATH=${HOME}/bin:${HOME}/.local/bin:${PATH}
 # # ---------------
 # # Typical way of using curl/wget from raw github does not work sometimes if github raw access is
 # # having a problem. Hence we go another way: clone the github repo, and then execute install from there.
-# RUN git clone https://github.com/ohmyzsh/ohmyzsh.git tmpozsh && tmpozsh/tools/install.sh --keep-zshrc && \
-#     rm -rf tmpozsh && sed -i 's/ZSH_THEME=.*/ZSH_THEME=\"agnoster\"/' ~/.zshrc
+RUN git clone https://github.com/ohmyzsh/ohmyzsh.git tmpozsh && tmpozsh/tools/install.sh --keep-zshrc && \
+    rm -rf tmpozsh && sed -i 's/ZSH_THEME=.*/ZSH_THEME=\"agnoster\"/' ~/.zshrc
 
 # # If sourcing our special .zshrc is not already in there, source our .zshrc.devlab in .zshrc
-# COPY zshrc.home.devlab ./.zshrc.home.devlab
-# RUN if ! grep -q ".zshrc.home.devlab" ~/.zshrc; then \
-#         echo ". ~/.zshrc.home.devlab" >> ~/.zshrc; \ 
-#         echo "if [[ \"\$TMUX_PANE\" == \"%0\" ]]; then cat ~/.licenses/LICENSE && echo && echo; fi" >> ~/.zshrc; \ 
-#     fi
+COPY zshrc.home.devlab ./.zshrc.home.devlab
+RUN if ! grep -q ".zshrc.home.devlab" ~/.zshrc; then \
+        echo ". ~/.zshrc.home.devlab" >> ~/.zshrc; \ 
+        echo "if [[ \"\$TMUX_PANE\" == \"%0\" ]]; then cat ~/.licenses/LICENSE && echo && echo; fi" >> ~/.zshrc; \ 
+    fi
 
 # # Create these variables so that programs running inside the containers know
 # # what language they can make use of.
-# ENV DEVLABLANG=${LANG}
+ENV DEVLABLANG=${LANG}
 
 EXPOSE ${JPYPORT}
 

@@ -63,15 +63,20 @@ exit 0
 # First, check if we are already running the devlab
 $cnt = docker ps --filter "name=devlab" | Measure-Object -line
 if ( $cnt.Lines -eq 2 ) {
-    # devlab is already running; so either stop it or 
-    # ask the user to stop it.
-    if ( $progarg -eq "stop" ) {
-        Write-Output "Stopped"
+    # devlab is already running; we only allow to shell into it
+    # or stop it if asked for. For any other command, ask the user
+    # to stop it.
+    if ( $progarg -eq "shell" ) {
+        docker exec -it devlab /bin/zsh
+        exit 0
+    } elseif ( $progarg -eq "stop" ) {
+        Write-Host -NoNewline "Stopped "
         docker stop devlab
         exit 0
     } else {
-        Write-Output "devlab is already running."
-        Write-Output "Stop it with 'devlab stop' before starting again."
+        Write-Output "devlab is already running." -foreground red
+        Write-Output "You can shell into it with 'devlab shell'."
+        Write-Output "OR stop it with 'devlab stop' before starting again."
         exit 1
     }
 } else {

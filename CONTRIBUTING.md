@@ -26,9 +26,11 @@ As mentioned above, you can somply pull the pre-built osbase from dockerhub:
 
     docker pull onspot/osbase
 
-If you do want to build the osbase (warning: this will take really long time because it pulls in the complete texlive), just see the instructions in the header of the dockerfile - dfosbase. THIS IS REALLY NOT NEEDED!
+Although the RECOMMENDED way is to pull the `osbase` before starting the build, please note that you can also skip this step as building `base` (explained below) will automatically pull this image before starting the build. 
 
-The dfbase forms the basis for all the other devlabs. Therefore, if any additions are needed for your versions of devlabs, this is the place you can add those additional packages. Since devlabs are based on opensuse, you will need to use `zypper` for adding new OS packages.
+If you DO want to build the `osbase` (warning: this will take really long time because it pulls in the complete texlive), just see the instructions in the header of the dockerfile - `dfosbase`. THIS IS REALLY NOT NEEDED!
+
+The `base` forms the basis for all the other devlabs. Therefore, if any additions are needed for your versions of devlabs, this is the place you can add those additional packages. Since devlabs are based on opensuse, you will need to use `zypper` for adding new OS packages.
 
 Now, you need to build the base devlab: use the `build` script for building your version of devlab. The instructions for building devlab are seen in the header of the build script. You can use either Linux / WSL (in which case, you will use `build` script) or powershell (in which case you will use `build.ps1`) for building devlab.
 
@@ -54,17 +56,39 @@ Each file you add should also have the following license header:
 #
 ```
 # What should get in your language-specific docker file
-Adding a new language is actually very easy - when you just derive your dockerfile from the base `devlab` image: 
+Adding a new language is actually very easy - when you just derive your dockerfile from the base `devlab` image. Just start with this template:
 
-    from onspot/devlab:<latest-tag>
+```
+# Do each of the below steps, and keep uncommented steps as they are
+FROM onspot/devlab:<latest-tag>
 
-    ... add your specific instructions here ...
+USER root 
 
-For example, for using the devlab v2.0 as your base, use this:
+# Step-1: Set some environment variables. These could be very specific to what you want. 
 
-    from onspot/devlab:2.0
+# Step-2: Install OS packages required for your language
+# Depending on what you want, you may also need to use one of these utilities to
+# pull language components: curl, wget, xz, tar, bz, zip, unzip
+# RUN zypper -n <package>
+# RUN curl -sSL <your path> -o <where you want the downloaded component to be saved>
+# RUN wget -O <where you want the downloaded component to be saved>
+# RUN tar xzvf <archive> OR tar xjvf <archive> OR tar xJvf <archive>
 
-Beyond that, you only add your language-specific installation instructions. Devlab is based on OpenSUSE Leap 15.2 - so if your language requires some OS packages, you use `zypper` to install them.
+# Step-3: Adjust PATH: add your own PATH appended to the existing PATH:
+# ENV PATH=<your path variables, with : between each of them>:${PATH}
+
+USER dev
+WORKDIR /home/dev
+
+# Step-4: Install the Jupyter kernel for your language
+
+# Finally, set this to identify your DEVLAB
+ENV DEVLABLANG=${LANG}
+```
+
+For example, for using the devlab v3.0 as your base, use this:
+
+    from onspot/devlab:3.0
 
 # Adding developer tips
 If you want to contribute to some developer tips, please feel free to add them in the file [DEVTIPS.md](DEVTIPS.md).
