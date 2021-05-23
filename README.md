@@ -45,12 +45,21 @@ This simply starts devlab as a terminal, with `tmux` configured for showing two 
 
 Similar to the above, but does not start a tmux.
 
-    ./devlab jupyter
+    ./devlab lab
 
 Starts devlab in a daemon mode, which serves Jupyter Lab. It is now possible to use devab in two ways:
 
 - Use a browser, navigate to the location shown by the command above, to use it as a Jupyter notebook
 - Shell into devlab to use it as a normal terminal. `./shell` helps to shell into a running devlab.
+
+<!-- -->
+    ./devlab nb
+
+OR
+
+    ./devlab notebook
+
+Starts devlab in a daemon mode, which serves Jupyter notebook. This is particularly useful for using features not yet available in the jupyter lab - eg: extensions such as RISE, for running live-code in slide-mode. Similar to the "lab" mode above, this can also be used as a shell by using `shell`.
 
 ## Stopping devlab
 Use this command to stop devlab:
@@ -96,8 +105,21 @@ If your corporate proxy is an MITM proxy, it is likely that your IT team provide
 
 Some language features (such as installing new packages / libraries for your language) need this external connection to work - and the combination of the environment variables and the `trustedcerts` directory will help in this connection behind your proxies.
 
+## Using Visual Studio Code with devlab
+Devlab's tmux configurarions come with a neat trick to split the terminal pane into top and bottom panes when connected from [VSCode](https://code.visualstudio.com/). To help devlab to detect its usage from within VSCode, add this to your VSCode settings:
+
+```
+   "terminal.integrated.env.linux": {
+       ... other existing settings ...
+
+        "VSCODEENV":"true"
+    }
+```
+
+## Running devlab on a port different from 9000
+devlab runs on TCP port 9000 by default. If you want to change this, you need to edit the `devlab` script (in Linux / Unix, on Windows, this is the `devlap.ps1`). Search for the variable HPORT, and change that to what you would like devlab to run on.
 # Contributing to devlab
-Well, anybody is welcome to contributing to this project, and [All Contributors]() are recognised for their contribution! [Check out here](CONTRIBUTING.md) to know how you can contribute to making devlab the best place for developers to quickly get on to a development laboratory.
+Well, anybody is welcome to contributing to this project, and [All Contributors](https://allcontributors.org/) are recognised for their contribution! [Check out here](CONTRIBUTING.md) to know how you can contribute to making devlab the best place for developers to quickly get on to a development laboratory.
 
 # Contributors ✨
 
