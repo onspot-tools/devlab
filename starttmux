@@ -1,5 +1,19 @@
 #!/bin/zsh
 #
+# Entrypoint for the devlab container.
+#
+# The main purpose for this script is to execute any commands
+# before we execute the actual command passed to us.
+#
+# The script takes one or more parameters, the first of which is
+# the command to be executed, and the rest of them are the commands
+# for that script.
+# 
+# Copyright (c) 2021 Arvind Devarajan
+# Licensed to you under the MIT License.
+# See the LICENSE file in the project root for more information.
+
+#
 # Make sure that VSCODEENV is set as settings in the VSCODE settings.json:
 #   "terminal.integrated.env.linux": {
 #         .....
