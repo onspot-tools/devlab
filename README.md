@@ -8,9 +8,9 @@ devlab is a way to quickly set up development environments for various languages
 This project contains the Docker files for building devlab and all the associated scripts (both for Linux and for Powershell).
 
 # Base devlab
-The base devlab starts a jupyter lab with Python, Julia and Javascript (Node.js) REPL. These languages will be available in every devlab, apart from specific other languages that devlab supports.
+The base devlab starts a jupyter lab with Python, Julia and Javascript (Node.js) REPL. These languages will be available in every devlab, apart from specific other languages that devlab supports. Although there is no Jupyter interface, when devlab is used as a shell, you also have access to all the C/C++ developer tools: gcc, c++, make, cmake, etc. 
 
-Although there is no Jupyter interface, when devlab is used as a shell, you also have access to all the C/C++ developer tools: gcc, c++, make, cmake, etc. 
+Since jupyter needs latex for exporting to pdf, texlive is also part of all devlabs. This means, base-devlab (and of course, any other devlabs that you use) can also double-up as your latex development environment! You can access all latex tools from the command-line - so shell into devlab to use Latex. If you rather prefer an IDE, [ViSual Studio Code (VSCode)](https://code.visualstudio.com/) offers a good development environment for working with Latex - we touch upon this in a later section below.
 
 THe shell version gives access to the command-line / REPLs of Python, Julia, nodejs (in the base devlab), and other tools based on the languages supported by your version of devlab.
 
@@ -70,7 +70,7 @@ devlab is designed in such a way that you will be using it as a user `dev` with 
 
 **Use both of these with care**, as you can really damage your system with these.
 
-## Using devlab behind a proxy
+# Using devlab behind a proxy
 Use of devlab behind a proxy server is a fully supported scenario. Proxy supporting only NTLM authentication is also possible, but only with a NTLM proxy helper like [px](https://github.com/genotrance/px), [cntlm](http://cntlm.sourceforge.net/) or [ntlmaps](http://ntlmaps.sourceforge.net/).
 
 To use devlabs behind a proxy, before starting devlabs (via the devlab command explained above), make sure to define http_proxy and the https_proxy environment variables. That's it! Devlabs can now be used without any problems. Except when...
@@ -79,14 +79,16 @@ If your corporate proxy is an MITM proxy, it is likely that your IT team provide
 
 Some language features (such as installing new packages / libraries for your language) need this external connection to work - and the combination of the environment variables and the `trustedcerts` directory will help in this connection behind your proxies.
 
-## Using Visual Studio Code with devlab
-Devlab can be used from [Visual Studio Code](https://code.visualstudio.com/) (VSCode) by using its remote-container connection - ensure that you have started devlab before connecting. Devlab runs with the container name `devlab` - simply connect to it from VSCode.
+# Using Visual Studio Code with devlab
+Devlab can be used from [Visual Studio Code (VSCode)](https://code.visualstudio.com/) by using its remote-container connection - ensure that you have started devlab before connecting. Devlab runs with the container name `devlab` - simply connect to it from VSCode.
 
-In combination with the [Jupyter plugin for VSCode](https://marketplace.visualstudio.com/items?itemName=ms-toolsai.jupyter), this makes it particularly very useful combination with devlab!
+In combination with the [Jupyter plugin for VSCode](https://marketplace.visualstudio.com/items?itemName=ms-toolsai.jupyter), this makes it particularly very useful combination with devlab! 
+
+If you work with Latex, then the [Latex Workshop](https://marketplace.visualstudio.com/items?itemName=James-Yu.latex-workshop) is a good extension to add your VSCode to work with it. It gives a good IDE-like feel for working with Latex.
 
 Additionally, for using VSCode with devlab behind a proxy, there are some VScode settings that are needed to be done: go to settings, search for "proxy", and then put in your proxy settings there (proxy name and port, SSL strictness, etc.)
 
-## Running devlab on a port different from 9000
+# Running devlab on a port different from 9000
 devlab runs on TCP port 9000 by default. If you want to change this, you need to edit the `devlab` script (in Linux / Unix, on Windows, this is the `devlap.ps1`). Search for the variable HPORT, and change that to what you would like devlab to run on.
 # Contributing to devlab
 Well, anybody is welcome to contributing to this project, and [All Contributors](https://allcontributors.org/) are recognised for their contribution! [Check out here](CONTRIBUTING.md) to know how you can contribute to making devlab the best place for developers to quickly get on to a development laboratory.
