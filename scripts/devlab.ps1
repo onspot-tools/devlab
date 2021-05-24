@@ -32,7 +32,6 @@ Param(
 )
 
 function Usage {
-Write-Host "Invalid command. Usage:" -foreground red
 @"
 devlab [-l <lang>] [-v <version>] <command>
 
@@ -43,21 +42,15 @@ Options:
 <command> can be one of:
 devlab [-l <lang>] [-v <version>] <command>
 
-Options:
--l <lang> - Language devlab to be started. Default: Python and Julia
--v <version> - Version of the language devlab to be started. Default: latest
-
 <command> can be one of:
 tmux - Starts a zsh shell with tmux
 lab - Starts the jupyter lab
 nb OR notebook - Starts the jupyter notebook
-shell - Starts a zsh shell without tmux
+shell - Starts (or connects to a running) devlab with a zsh shell without tmux
 stop - Stops the started jupyter (lab or notebook)
 
 If no command is given, default is "lab".
 "@
-
-exit 0
 }
 
 # First, check if we are already running the devlab
@@ -74,7 +67,7 @@ if ( $cnt.Lines -eq 2 ) {
         docker stop devlab
         exit 0
     } else {
-        Write-Output "devlab is already running." -foreground red
+        Write-Host "devlab is already running." -foreground red
         Write-Output "You can shell into it with 'devlab shell'."
         Write-Output "OR stop it with 'devlab stop' before starting again."
         exit 1
@@ -141,6 +134,10 @@ function PrintJpyInfo($logs) {
 }
 
 switch ($progarg) {
+    "help" {
+        Usage
+        exit 0
+    }
     "shell" {
         RunDevlab "/bin/zsh" "-it" 
     }
@@ -160,6 +157,8 @@ switch ($progarg) {
         RunDevlab "starttmux" "-it"
     }
     Default {
+        Write-Host "Invalid command. Usage:" -foreground red
         Usage
+        exit 1
     }
 }
