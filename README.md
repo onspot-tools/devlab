@@ -7,6 +7,13 @@ devlab is a way to quickly set up development environments for various languages
 
 This project contains the Docker files for building devlab and all the associated scripts (both for Linux and for Powershell).
 
+# Base devlab
+The base devlab starts a jupyter lab with Python, Julia and Javascript (Node.js) REPL. These languages will be available in every devlab, apart from specific other languages that devlab supports.
+
+Although there is no Jupyter interface, when devlab is used as a shell, you also have access to all the C/C++ developer tools: gcc, c++, make, cmake, etc. 
+
+THe shell version gives access to the command-line / REPLs of Python, Julia, nodejs (in the base devlab), and other tools based on the languages supported by your version of devlab.
+
 # Installing devlab
 The easiest way to get devlab on your PC is by using the install-scripts:
 
