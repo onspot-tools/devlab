@@ -16,11 +16,16 @@
 
 set -e
 
+# We are not sure where our current directory is, as it depends on
+# what was the WORKDIR set in the dockerfile we were built in. However,
+# we need to make sure that we start with a known current directory.
+export HOME=/home/dev && cd ${HOME}
+
 # Make sure to clear all config files before adding 
 # default configuration in them
-cat /dev/null > ~/.envrc
-cat /dev/null > ~/.wgetrc
-cat /dev/null > ~/.curlrc
+cat /dev/null > ${HOME}/.envrc
+cat /dev/null > ${HOME}/.wgetrc
+cat /dev/null > ${HOME}/.curlrc
 
 # If we have mounted a /opt/certs directory, then, we
 # have some certificates to be installed.
@@ -32,9 +37,9 @@ if [[ -d /opt/certs ]]; then
 
     # # Now, add this directory as trusted CA store for both
     # # wget and curl. This helps in their use without a problem.
-    # echo "ca_directory=/opt/certs" >> ~/.wgetrc
+    # echo "ca_directory=/opt/certs" >> ${HOME}/.wgetrc
     # sudo zsh -c 'echo "ca_directory=/opt/certs" >> /root/.wgetrc'
-    # echo "capath=/opt/certs" >> ~/.curlrc
+    # echo "capath=/opt/certs" >> ${HOME}/.curlrc
     # sudo zsh -c 'echo "capath=/opt/certs" >> /root/.curlrc'    
 fi 
 
@@ -56,18 +61,18 @@ fi
 # Make sure to define all proxy environment variables
 if [[ -n "$http" || -n "$https" ]]; then
     # General environment variables with proxy
-    echo "export http_proxy=$http" >> ~/.envrc
-    echo "export https_proxy=$https" >> ~/.envrc
-    echo "export no_proxy=localhost,127.0.0.1" >> ~/.envrc    
-    echo "export HTTP_PROXY=$http" >> ~/.envrc
-    echo "export HTTPS_PROXY=$https" >> ~/.envrc
-    echo "export NO_PROXY=localhost,127.0.0.1" >> ~/.envrc    
+    echo "export http_proxy=$http" >> ${HOME}/.envrc
+    echo "export https_proxy=$https" >> ${HOME}/.envrc
+    echo "export no_proxy=localhost,127.0.0.1" >> ${HOME}/.envrc    
+    echo "export HTTP_PROXY=$http" >> ${HOME}/.envrc
+    echo "export HTTPS_PROXY=$https" >> ${HOME}/.envrc
+    echo "export NO_PROXY=localhost,127.0.0.1" >> ${HOME}/.envrc    
 
     # Proxy configurations for wget and curl
-    echo "use_proxy=on" >> ~/.wgetrc
-    echo "http_proxy=$http_proxy" >> ~/.wgetrc
-    echo "https_proxy=$https_proxy" >> ~/.wgetrc
-    echo "proxy=$http_proxy" >> ~/.curlrc
+    echo "use_proxy=on" >> ${HOME}/.wgetrc
+    echo "http_proxy=$http_proxy" >> ${HOME}/.wgetrc
+    echo "https_proxy=$https_proxy" >> ${HOME}/.wgetrc
+    echo "proxy=$http_proxy" >> ${HOME}/.curlrc
 
     # Copy all of these in root's home too
     sudo zsh -c "cp .envrc .wgetrc .curlrc /root/"
@@ -81,4 +86,4 @@ if [[ -n "$http" || -n "$https" ]]; then
 fi
 
 # Change to work directory and execute the command line
-cd work && exec env "$@"
+cd ${HOME}/work && exec env "$@"
