@@ -123,6 +123,9 @@ RUN sed -i "s@.*c.NotebookApp.notebook_dir\ .*@c.NotebookApp.notebook_dir\ =\ \'
 # Install the IJulia package to use Julia with Jupyter
 RUN julia -e 'using Pkg; Pkg.add("IJulia");'
 
+# Now, install IJavascript - the nodejs REPL inside jupyter
+RUN npm install -g ijavascript && ijsinstall
+
 # # Add SSL certificates
 # # RUN mkdir -p /opt/ssl
 # # COPY --chown=dev:users ["localhost.key", "localhost.crt", "/opt/ssl/"]
