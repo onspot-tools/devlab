@@ -38,12 +38,12 @@ Options:
 tmux - Starts a zsh shell with tmux
 lab - Starts the jupyter lab
 nb OR notebook - Starts the jupyter notebook
-shell - Starts a zsh shell without tmux
+shell - Starts (or connects to a running) devlab with a zsh shell without tmux
 stop - Stops the started jupyter (lab or notebook)
 
 If no command is given, default is "lab".
 EOF
-    exit 0
+    exit 1
 }
 
 # First, collect all options
