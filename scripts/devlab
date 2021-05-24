@@ -26,7 +26,6 @@
 ###################################################
 
 usage() {
-echo -e "\033[0;31mInvalid command. Usage:\033[0m"
 cat << EOF 
 devlab [-l <lang>] [-v <version>] <command>
 
@@ -38,12 +37,11 @@ Options:
 tmux - Starts a zsh shell with tmux
 lab - Starts the jupyter lab
 nb OR notebook - Starts the jupyter notebook
-shell - Starts a zsh shell without tmux
+shell - Starts (or connects to a running) devlab with a zsh shell without tmux
 stop - Stops the started jupyter (lab or notebook)
 
 If no command is given, default is "lab".
 EOF
-    exit 0
 }
 
 # First, collect all options
@@ -151,6 +149,10 @@ printjpyinfo() {
 
 # Depending on what we want to start, set up docker parameters
 case $progarg in
+"help")
+    usage
+    exit 0
+    ;;
 "shell")
     rundevlab "/bin/zsh" "-it" 
     ;;
@@ -170,5 +172,8 @@ case $progarg in
     rundevlab "starttmux" "-it"
     ;;
 *)
-    usage;;
+    echo -e "\033[0;31mInvalid command. Usage:\033[0m"
+    usage
+    exit 1
+    ;;
 esac

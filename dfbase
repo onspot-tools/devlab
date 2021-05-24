@@ -152,7 +152,7 @@ EXPOSE ${JPYPORT}
 # # Copy all license files in the container to be legally compliant
 COPY licenses/ .licenses/
 
-# # Create the script and the work directories
+# Create the script and the work directories
 RUN mkdir -p /opt/scripts
 RUN mkdir -p /home/dev/work
 
