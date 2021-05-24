@@ -116,6 +116,8 @@ Devlab's tmux configurarions come with a neat trick to split the terminal pane i
     }
 ```
 
+Additionally, for using VSCode with devlab behind a proxy, there are some VScode settings that are needed to be done: go to settings, search for "proxy", and then put in your proxy settings there (proxy name and port, SSL strictness, etc.)
+
 ## Running devlab on a port different from 9000
 devlab runs on TCP port 9000 by default. If you want to change this, you need to edit the `devlab` script (in Linux / Unix, on Windows, this is the `devlap.ps1`). Search for the variable HPORT, and change that to what you would like devlab to run on.
 # Contributing to devlab
