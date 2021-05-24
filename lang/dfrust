@@ -10,7 +10,6 @@ FROM onspot/devlab:3.0
 
 USER root
 
-RUN zypper -n install -t pattern devel_C_C++ && zypper -n install cmake gcc-c++
 RUN echo "pupdate ~/.cargo/bin" >> /etc/zsh.zshrc.local
 
 USER dev
