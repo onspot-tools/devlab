@@ -32,7 +32,6 @@ Param(
 )
 
 function Usage {
-Write-Host "Invalid command. Usage:" -foreground red
 @"
 devlab [-l <lang>] [-v <version>] <command>
 
@@ -52,8 +51,6 @@ stop - Stops the started jupyter (lab or notebook)
 
 If no command is given, default is "lab".
 "@
-
-exit 1
 }
 
 # First, check if we are already running the devlab
@@ -137,6 +134,10 @@ function PrintJpyInfo($logs) {
 }
 
 switch ($progarg) {
+    "help" {
+        Usage
+        exit 0
+    }
     "shell" {
         RunDevlab "/bin/zsh" "-it" 
     }
@@ -156,6 +157,8 @@ switch ($progarg) {
         RunDevlab "starttmux" "-it"
     }
     Default {
+        Write-Host "Invalid command. Usage:" -foreground red
         Usage
+        exit 1
     }
 }

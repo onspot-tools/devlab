@@ -12,7 +12,7 @@ The easiest way to get devlab on your PC is by using the install-scripts:
 
 Linux / WSL:
 ```
-curl -sSL https://raw.githubusercontent.com/onspot-tools/devlab/master/scripts/install.sh | sh`
+curl -sSL https://raw.githubusercontent.com/onspot-tools/devlab/master/scripts/install.sh | sh
 ```
 
 Powershell:
@@ -25,51 +25,12 @@ Either of these will create a directory called `devlab` where you invoked them, 
 To use devlab, get into that directory and start devlab. In the explanation that follows, we use only `devlab`, but everything also holds good for `devlab.ps1` too - for those who use docker-for-desktop and powershell.
 
 # devlab script
-The devlab script is the starting point for using devlab, and has the following usage:
-
-    devlab [-l <lang>] [-v <version>] [notmux | jupyter | stop]
-
-where:
--l <lang> - Use devlab for a specific language. Default: devlab comes up with Python and JUlia.
--v <version> - Use devlab for a specific version of a language. Default: latest version
-
-The other commands are explained below.
-## Starting devlab
-The devlab can be started with any of the following options:
-
-    ./devlab
-
-This simply starts devlab as a terminal, with `tmux` configured for showing two vertical panes.
-
-    ./devlab notmux
-
-Similar to the above, but does not start a tmux.
-
-    ./devlab lab
-
-Starts devlab in a daemon mode, which serves Jupyter Lab. It is now possible to use devab in two ways:
-
-- Use a browser, navigate to the location shown by the command above, to use it as a Jupyter notebook
-- Shell into devlab to use it as a normal terminal. `./shell` helps to shell into a running devlab.
-
-<!-- -->
-    ./devlab nb
-
-OR
-
-    ./devlab notebook
-
-Starts devlab in a daemon mode, which serves Jupyter notebook. This is particularly useful for using features not yet available in the jupyter lab - eg: extensions such as RISE, for running live-code in slide-mode. Similar to the "lab" mode above, this can also be used as a shell by using `shell`.
-
-## Stopping devlab
-Use this command to stop devlab:
-
-    ./devlab stop
+The devlab script is the starting point for using devlab. To know how to use the script, just type `./devlab help` (UNIX) or `.\devlab.ps1 help` (Windows).
 
 # Using devlab
-After starting devlab, it can be used both as a terminal or a jupyter notebook as explained above. Inside the devlab, you will be seeing two directories: `bin` and `work` (there might be more depending on what version of devlab you are using). `bin` contains a command `starttmux` start starts a pre-configured tmux for you - if you require. Note that starting devlab without any option automatically starts `tmux` for you too, unless you have specifically used `notmux` command not to start tmux.
+As you would have seen with `devlab help`, on starting devlab, it can be used both as a terminal or a jupyter notebook. When started as notebook, it displays the running Jupyter's URL on screen.
 
-The work directory is for keeping your working files. These files are preserved even after you stop devlab - they will be in the "work" directory in the same directory where you started devlab from.
+When in shell, you will notice a directory "work". The work directory is for keeping your working files. These files are preserved even after you stop devlab - they will be in the "work" directory in the same directory where you started devlab from. Jupyter notebooks automatically keep the notebooks in this directory.
 
 devlab creates docker named-volumes to preserve your files. The name of the volume follows a standard: 
 
@@ -83,10 +44,16 @@ If you would want to start afresh, just remove the relevant colume and then rest
 
 If you would like to copy the files from the volumes into your host machine, or want to use the files from the volumes from other containers, just mount the volume where you want and use that - independant of devlab.
 
+The whole of your home-directory is volume-mounted into one of these named-volumes. You can even create other directories under your home to keep files that will stay across devlab sessions.
+
 ## Adding Python packages
 More python packages can be installed simply by using:
 
-    `pip install <package>`
+    conda install <package>
+
+OR
+
+    pip install <package>
 
 ## Normal user and root user
 devlab is designed in such a way that you will be using it as a user `dev` with normal privileges. However:
@@ -106,15 +73,9 @@ If your corporate proxy is an MITM proxy, it is likely that your IT team provide
 Some language features (such as installing new packages / libraries for your language) need this external connection to work - and the combination of the environment variables and the `trustedcerts` directory will help in this connection behind your proxies.
 
 ## Using Visual Studio Code with devlab
-Devlab's tmux configurarions come with a neat trick to split the terminal pane into top and bottom panes when connected from [VSCode](https://code.visualstudio.com/). To help devlab to detect its usage from within VSCode, add this to your VSCode settings:
+Devlab can be used from [Visual Studio Code](https://code.visualstudio.com/) (VSCode) by using its remote-container connection - ensure that you have started devlab before connecting. Devlab runs with the container name `devlab` - simply connect to it from VSCode.
 
-```
-   "terminal.integrated.env.linux": {
-       ... other existing settings ...
-
-        "VSCODEENV":"true"
-    }
-```
+In combination with the [Jupyter plugin for VSCode](https://marketplace.visualstudio.com/items?itemName=ms-toolsai.jupyter), this makes it particularly very useful combination with devlab!
 
 Additionally, for using VSCode with devlab behind a proxy, there are some VScode settings that are needed to be done: go to settings, search for "proxy", and then put in your proxy settings there (proxy name and port, SSL strictness, etc.)
 
