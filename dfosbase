@@ -29,6 +29,10 @@ RUN zypper -n install timezone neovim zsh \
               iputils unzip tar gzip bzip2 xz which iproute2 \
               sudo wget curl git tmux direnv pandoc
 
+# Many python / npm packages require the C/C++ and the developer tools to
+# be pre-installed. So, we will make this a part of the OS base itself!
+RUN zypper -n install -t pattern devel_C_C++ && zypper -n install cmake gcc-c++
+
 # Make sure that dates are correct within the container
 RUN rm -f /etc/localtime /etc/localtime.rpmsave && ln -s /usr/share/zoneinfo/Asia/Kolkata /etc/localtime
 
