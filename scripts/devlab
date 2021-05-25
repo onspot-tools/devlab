@@ -134,15 +134,17 @@ rundevlab() {
 printjpyinfo() {
     local logs=$1
 
-    if [[ -n $logs ]]; then
-        info=$(echo "$logs" | grep -v "^\[.*" | sed s/^\ \ \ \ // | sed s@:$JPYPORT/@:$HPORT/@)
-        echo "$info"
-    else 
-        echo 'Jupyter took unusually long time to start.'
+    info=$(echo "$logs" | grep -v "^\[.*" | sed s/^\ \ \ \ // | sed s@:$JPYPORT/@:$HPORT/@)
+    echo -e "$info\n"
+
+    # The above information must have contained the http URL of jupyter. If it did not contain, jupyter must have taken long time
+    # to startup - so the URL can only be got from docker logs.
+    if [[ $info != *"?token="* ]]; then
+        echo -e '\033[0;31mJupyter took unusually long time to start.\033[0m'
         echo 'Use "docker logs devlab" to get the URLs to access Jupyter.'
 
         if [[ $JPYPORT -ne $HPORT ]]; then
-            echo "NOTE: *** In the URL shown, use $HPORT as the port number instead of $JPYPORT ***"
+            echo "NOTE: *** In the URL shown, use $HPORT as the port number instead of $JPYPORT ***"            
         fi
     fi
 }
