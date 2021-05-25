@@ -1,0 +1,25 @@
+This license text was obtained from:
+
+https://www.tug.org/texlive/copying.html
+
+---
+
+TeX Live licensing, copying, and redistribution
+If you want to redistribute and/or modify TeX Live, please see the copying conditions.
+
+As a general statement, the TeX Live maintainers agree, within the shared purpose of working on TeX Live, with the general principles and philosophy of the free software movement.
+
+Therefore, to the best of our knowledge, all the software in TeX Live meets the requirements of the Free Software Foundation's definition of free software, and the Debian Free Software Guidelines. In the rare cases of conflict, we generally follow the FSF. Furthermore, the material in TeX Live should not require nonfree software to be useful. (Our package contribution page lists some more technical details.)
+
+In short, this means that all the material in TeX Live may be freely used, copied, modified, and/or redistributed, subject to (in many cases) the sources remaining freely available. (Note: this statement is not true of all the software in the CTAN snapshot, which is distributed alongside TeX Live in the TeX Collection.)
+
+Of course, you must not yourself claim copyright (especially with a proprietary license) on TeX Live just because you redistribute it. Again, see the copying conditions for more information.
+
+Trademarks: the FSF has guidelines for trademarks in free system distributions, which we follow. In short, trademarks in and of themselves are not generally a problem; the problem would be if they are used to restrict distribution or modification. This is not the case for any relevant trademarks here, as far as we know. It is not our intent to allow or encourage inappropriate use of trademarks.
+
+Donald Knuth released his original TeX and Metafont software, and Computer Modern fonts, to the public domain: TeX copyright page, MF copyright page, CM copyright page, article by DEK.
+
+For a few of Knuth's files (tex.web, mf.web, plain.tex, plain.mf, hyphen.tex), he states that modified versions should be renamed. (The relationship between this and the public domain declaration is not precisely clear, since TeX and MF long predate such legal wrangling, but in any case it is a reasonable condition, and easy to satisfy.)
+
+To state explicitly what is implied by the above: Because TeX Live is free software, there is no warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+
