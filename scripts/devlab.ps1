@@ -120,11 +120,14 @@ function RunDevlab($cmd, $mode) {
 # to be used by the user. Note that this function also adjusts for the port number based on where
 # the devlab is listening.
 function PrintJpyInfo($logs) {
-    if ( $logs ) {
-        $info = $logs | Select-String -notmatch "^\[" | ForEach-Object { $_ -replace "^\ \ \ \ ","" -replace ":${JPYPORT}/",":${HPORT}/" }
-        Write-Output ($info -join "`r`n" | out-string)
-    } else {
-        Write-Output 'Jupyter took unusually longer time to start.'
+    $lines = $logs | Select-String -notmatch "^\[" | ForEach-Object { $_ -replace "^\ \ \ \ ","" -replace ":${JPYPORT}/",":${HPORT}/" }
+    $info = $lines -join "`r`n" | out-string
+    Write-Output $info 
+
+    # The above information must have contained the http URL of jupyter. If it did not contain, jupyter must have taken long time
+    # to startup - so the URL can only be got from docker logs.
+    if ( $info -notlike "*?token=*" ) {
+        Write-Host 'Jupyter took unusually longer time to start.' -foreground red
         Write-Output 'Use "docker logs devlab" to get the URLs to access Jupyter.'
 
         if ( $JPYPORT -ne $HPORT ) {
