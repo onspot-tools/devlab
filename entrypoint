@@ -85,5 +85,12 @@ if [[ -n "$http" || -n "$https" ]]; then
     sudo zsh -c "sed -i 's@^NO_PROXY=.*@NO_PROXY=\"localhost, 127.0.0.1\"@' /etc/sysconfig/proxy"            
 fi
 
+# If the command starts with "jupyter", we drop the license directly on the command-line
+if [[ "$@" =~ "jupyter*" ]]; then
+    echo ""
+    cat ${HOME}/.licenses/LICENSE
+    echo -e "\n---"    
+fi
+
 # Change to work directory and execute the command line
 cd ${HOME}/work && exec env "$@"

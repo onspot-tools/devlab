@@ -92,3 +92,112 @@ For example, for using the devlab v3.0 as your base, use this:
 
 # Adding developer tips
 If you want to contribute to some developer tips, please feel free to add them in the file [DEVTIPS.md](DEVTIPS.md).
+
+# Maintainer notes
+This section serves more as notes for maintainers of onspot/devlab repositories. If you plan to rebuild all images, the following steps will easen out your effort, and also make sure that things do not go wrong.
+
+The commands below assume your devlab development environment is Linux / Windows Subsystem for Linux (WSL). All effort is done to maintain the powershell version of the build-script too (`build.ps1`) - so, basically these instructions *may work* without changes also on Windows - they just have not been tested as much as being tested on Linux / WSL environments.
+
+HINT:
+Use of VSCode can greatly help in many of the steps below, without resorting to command-lines. Explained below are the command lines for the operations. 
+
+In general, the following operations can be done directly from within VSCode:
+- Switching to a branch (example, switching to a language branch)
+- Tagging a specific commit
+- Deleting a tag
+- Merging brances
+
+Now, for the set of operations to build the complete devlab suite:
+
+1. Start with building osbase - this forms the base of all devlabs, including the base devlab. The best way to build it is by:
+   - Tagging the latest commit on the master-branch with `osbase-<version>`. For example, `osbase-1.0`. Make sure that the tag does not already exist in github. 
+
+         git tag -a osbase-<version>
+
+     Note that it is also possible to reuse an existing tag if you want (eg: if you have done just a non-code change, such as adding info in README, etc.). In this case, you will have to first delete the existing tag both in your local machine and the remote github repo, and then retag with the same tag. For example, if your latest version of `osbase` is `osbase-1.0`. and you want to retag to 1.0, then:
+
+         # Delete local tag
+         git tag --delete osbase-1.0
+
+         # Delete remote tag 
+         git push origin :refs/tags/osbase-1.0
+
+         # Reuse tag: retag with the tag
+         git tag -a osbase-1.0
+
+   - Push the code to github:
+
+          git push origin master
+
+   - Push also the tag of osbase:
+
+         git push origin osbase-<version>
+
+    These steps will automatically trigger the build of the osbase in dockerhub.
+
+2. Wait until [onspot/osbase](https://hub.docker.com/repository/docker/onspot/osbase) is built completely in dockerhub. Note that whatever tag you use for tagging the code of osbase in git, the dockerhub image's tag is always `latest`.
+3. Now, build the base-devlab:
+   - Pull the built onspot/osbase to your devlab development system:
+
+         docker pull onspot/osbase
+
+   - Go to the devlab git repo-root, and build the base-devlab.
+
+         ./build
+
+   - Once the build is done and is successful, tag the git repo master branch with a tag:
+   
+         git tag -a base-<version>
+
+     Of course, it is also possible to reuse tag as mentioned for `osbase` before. In general, we will avoid reuse of tags unless absolutely sure - and if we are sure that only non-code aspects such as README, DEVTIPS, etc. are touched with the commits.
+
+   - Push the base-devlab also to dockerhub:
+
+         docker push onspot/devlab
+         docker push onspot/devlab:<version>
+
+4. Once both osbase and the base-devlabs have been built and pushed to dockerhub, it is now time to build each of the other devlabs. We will basically not build them on our local machines: we will use dockerhub for building all of these images. For that, we will simply tag our code in git, and push the code (and their tags) to github. Dockerhub now is automatically triggered to build the images as soon as they are pushed into github. Since some of the languages depend on other, the order of building of these devlabs matter. Also, we build both the `latest` version of the images and their tagged versions. Currently, the following languages are independent of each other: so can be built in any order:
+
+   java  
+   rust  
+   dotnet  
+   haskell  
+
+   These languages depend on atleast one of the languages above:
+
+   scala (depends on java)
+
+5. For each language to be built, follow this order:
+   - Switch to the branch named with the language. For example, to build java, switch to `java`:
+
+         git checkout java
+
+    - Merge the master branch with this language branch. This will make all language branches to have the base-set of features provided by the base-devlab:
+
+          git merge master 
+
+      Ideally, there should be no merge conflicts, because language branches only add a dockerfile within the `lang` folder.
+
+    - Tag the last commit with the tag of the form `<lang>-<image-version>-<base-devlab-version>` where:
+
+      `<lang>` - Language we are building  
+      `<image-version>` - Version of the devlab image. Generally, this is the same version as the compiler version of the language we are building. Certain languages come with an "update" tool (such as `rust` comes with `rustup`) - so, basically, it is possible to use any version of the compiler in these devlabs: and so we simply have `<image-version>` as a running serial number starting with 1.0.  
+      `<base-devlab-version>` - This is the version of the base devlab from which this image is derived from. This is to be the same as the version you use with `FROM onspot/devlab:<version>` in the dockerfile of the language.
+
+      Of course, tags can be reused, with the conditions explained above. Reusing of the tag will require to delete both local and remote tags - and this is also explained with an example of `osbase` above.
+
+      The tagging itself is done with git:
+
+          git tag -a <tag-as-described-above>
+
+    - Push the code to github:
+
+          git push
+
+      This will automatically trigger a build of the `latest` version of the devlab image pertaining to the language.
+    - Push the language tag as described above:
+
+          git push origin <tag-as-described-above>
+
+6. Repeat this process for each language that you want to build.
+
