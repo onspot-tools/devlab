@@ -6,7 +6,7 @@
 # Licensed to you under the MIT License.
 # See the LICENSE file in the project root for more information.
 #
-FROM onspot/devlab:3.0
+FROM onspot/devlab:4.0
 
 USER root
 
