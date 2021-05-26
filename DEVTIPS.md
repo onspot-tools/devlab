@@ -26,7 +26,7 @@ In your `dotask` script, you will additionally need to check if a cron-entry is 
 
 The function below will do all these for you:
 
-```shell
+```bash
     function setup_cron {
         # Add cron entry to run `dotask` every hour from 9 to 6, every day.
         # The redirection to null is done to avoid the message 
@@ -41,7 +41,7 @@ The function below will do all these for you:
 
 All you have to now do is to call the above function, also in your `dotask` script, if the cron entries are not yet added:
 
-```shell
+```bash
     crontab -l 2>/dev/null | grep -q dotask
     if [ $? -ne 0 ]; then
         # We do not have the cron entry in the crontab. This means the script is started for
@@ -131,7 +131,7 @@ Additionally, you may need to install the powerline fonts to use unicode fonts f
 # Installing powerline fonts
 For good use of latex that comes for free withing all devlabs, you may want to add powerline fonts for unicode support. Just install those fonts in your home directory using these instructions:
 
-```shell
+```bash
 # clone
 git clone https://github.com/powerline/fonts.git --depth=1
 # install

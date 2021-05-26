@@ -116,15 +116,16 @@ Now, for the set of operations to build the complete devlab suite:
 
      Note that it is also possible to reuse an existing tag if you want (eg: if you have done just a non-code change, such as adding info in README, etc.). In this case, you will have to first delete the existing tag both in your local machine and the remote github repo, and then retag with the same tag. For example, if your latest version of `osbase` is `osbase-1.0`. and you want to retag to 1.0, then:
 
-         # Delete local tag
-         git tag --delete osbase-1.0
+     ```bash
+     # Delete local tag
+     git tag --delete osbase-1.0
 
-         # Delete remote tag 
-         git push origin :refs/tags/osbase-1.0
+     # Delete remote tag 
+     git push origin :refs/tags/osbase-1.0
 
-         # Reuse tag: retag with the tag
-         git tag -a osbase-1.0
-
+     # Reuse tag: retag with the tag
+     git tag -a osbase-1.0
+     ```
    - Push the code to github:
 
           git push origin master
