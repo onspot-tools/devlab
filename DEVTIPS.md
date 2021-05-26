@@ -26,6 +26,7 @@ In your `dotask` script, you will additionally need to check if a cron-entry is 
 
 The function below will do all these for you:
 
+```shell
     function setup_cron {
         # Add cron entry to run `dotask` every hour from 9 to 6, every day.
         # The redirection to null is done to avoid the message 
@@ -36,15 +37,18 @@ The function below will do all these for you:
         ps -aef | awk '{print $8}' | grep -q cron
         if [ $? -ne 0 ]; then cron; fi
     }
+```
 
 All you have to now do is to call the above function, also in your `dotask` script, if the cron entries are not yet added:
 
+```shell
     crontab -l 2>/dev/null | grep -q dotask
     if [ $? -ne 0 ]; then
         # We do not have the cron entry in the crontab. This means the script is started for
         # the first time. Just set up cron in this system.
         setup_cron
     fi
+```
 
 ## Step-3: Start your task the first time during login
 Well, we have now set up a task to be started periodically. Who starts it the first time? We, of course!
@@ -67,7 +71,6 @@ Edit the VSCode settings.json file and `lulatex` and `xelatex` to your tools lis
 
 ```json
     "latex-workshop.latex.tools": [
-       // Other tools...    
         {
             "name": "lualatexmk",
             "command": "latexmk",
@@ -111,13 +114,17 @@ Now, add build recepes (of they are not yet existing) that builds latex files us
             "tools": [
                 "xelatexmk"
             ]
-        }, 
-        
-        // Other recepes
+        } 
     ]
 ```
 
 The above configures Latex Workshop to use `lualatex` for building. If you instead prefer `xelatex`, just flip the order of the two recepes above (such that `latexmk (xelatex)` comes first).
+
+Default configuration of Latex Workshop is to also produce all the auxilliary and output files in the same directory as your tex input file. To change this behaviour, adding this setting to your settings file is also recommended:
+
+    "latex-workshop.latex.outDir": "%DIR%/out"
+
+This will make sure that your input file directory is not clobbered with additional files. Your output pdf file will be generted in the `out` subdirectory.
 
 Additionally, you may need to install the powerline fonts to use unicode fonts for Latex. 
 
