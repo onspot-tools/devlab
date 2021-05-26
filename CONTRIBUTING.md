@@ -3,7 +3,7 @@ Devlab is a big project. Obviously, it is not possible that the development envi
 
 Within days of starting the project with just 5 languages - Python, Julia (as base languages), and individual devlabs with haskell, dotnet (C#, F# and VB), and Java - devlab got transitioned from a one-man-organisational (https://www.ramdoot.in) effort to one which got detached from any such "organisational tag" - to a generic name "onspot". To make this transition a strong transition, the github account in which code is maintained also got transitioned to [online-tools](https://github.com/onspot-tools/devlab.git) - originally maintained and developed at [ramdootin](https://github.com/ramdootin).
 
-For contributions to the project, just raise a PR, and one of us will take it from there. Since we follow the [all-contributors](https://github.com/all-contributors/all-contributors) specifications, we'll add you as a contributor to this project! Of course, you can make this easier for us by adding your name as a contrubutor yourself before you commit and raise a PR - see the last section of this file to know how you can do that.
+For contributions to the project, just raise a PR, and one of us will take it from there. Since we follow the [all-contributors](https://github.com/all-contributors/all-contributors) specifications, you can make it easier for us by adding your name as a contrubutor yourself before you commit and raise a PR - see the last section of this file to know how you can do that.
 
 Ok, enough of history, now lets get on to job.
 
@@ -43,7 +43,7 @@ Now, create a directory `lang` in the root of the repo, and add your language-sp
 
 Each file you add should also have the following license header:
 
-```
+```dockerfile
 # -*- mode: dockerfile -*-
 #
 # <brief one-line summary of what this file contains>
@@ -58,7 +58,7 @@ Each file you add should also have the following license header:
 # What should get in your language-specific docker file
 Adding a new language is actually very easy - when you just derive your dockerfile from the base `devlab` image. Just start with this template:
 
-```
+```dockerfile
 # Do each of the below steps, and keep uncommented steps as they are
 FROM onspot/devlab:<latest-tag>
 
@@ -195,9 +195,28 @@ Now, for the set of operations to build the complete devlab suite:
           git push
 
       This will automatically trigger a build of the `latest` version of the devlab image pertaining to the language.
+
+      If you plan also to tag this latest version with a new tag, this automatic build will be overwritten by the tagged version as soon as you push the tag below.
+
     - Push the language tag as described above:
 
           git push origin <tag-as-described-above>
 
+      This will now trigger another build in dockerhub, with a tag for the image. The image will also be automatically tagged as `latest` - so, basically, the tagged version and the `latest` version of the image will have the same digest.
+
 6. Repeat this process for each language that you want to build.
 
+# Adding yourself as a contributor to this project
+[all-contributors](https://github.com/all-contributors/all-contributors) gives us an easy CLI for managing contributors. Install that as follows:
+
+    npm i -g all-contributors-cli
+
+This installs the all-contributors-cli as a global node tool. To add yourself as a contributor, you use this command:
+
+    npx all-contributors add <your-github-uid> <contribution-type>
+
+The various contribution types are mentioned in the [emoji key here](https://allcontributors.org/docs/en/emoji-key). For example, to add yourself as a contributor for code, documentation, fixing bugs and for answering questions on stackoverflow, etc., use this:
+
+    npx all-contributors add <your-github-uid> code,doc,bug,question
+
+That's it! This command will add you as the contributor to this project for the contribution types given in your command and also commit the code. The changes are done in the [README.md](README.md) file - the last part of that file will contain your github avatar and your contributions as emojies.
