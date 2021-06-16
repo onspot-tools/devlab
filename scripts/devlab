@@ -27,11 +27,12 @@
 
 usage() {
 cat << EOF 
-devlab [-l <lang>] [-v <version>] <command>
+devlab [-l <lang>] [-v <version>] [-p <port>] <command>
 
 Options:
 -l <lang> - Language devlab to be started. Default: Python and Julia
 -v <version> - Version of the language devlab to be started. Default: latest
+-p <port> - Port on which devlab listens. Default: 9000
 
 <command> can be one of:
 tmux - Starts a zsh shell with tmux
@@ -45,13 +46,16 @@ EOF
 }
 
 # First, collect all options
-while getopts "l:v:" opt; do
+while getopts "l:v:p:" opt; do
     case ${opt} in
         l)
             lang=${OPTARG}
             ;;
         v)
             ver=${OPTARG}
+            ;;
+        p)  
+            port=${OPTARG}
             ;;
         *)
             usage;;
@@ -64,24 +68,43 @@ progarg=$1
 progarg=${progarg:=lab}
 lang=${lang:=base}
 ver=${ver:=latest}
+port=${port:=9000}
+
+# Build parameters
+REPONAME=onspot/devlab
+LANG=$lang
+VERSION=$ver
+
+# Run parameters
+JPYPORT=9000        # Port in which devlab runs (within the container)
+HPORT=$port         # Port in which devlab should run on the host machine
+
+# Adjust the image and container names based on the language name
+if [[ $LANG == "base" ]]; then
+    IMGNAME=${REPONAME}  # For base devlab, we'll keep the image name simple
+    CNAME=devlab         # For base devlab, we'll keep the container name simple    
+else
+    IMGNAME="${REPONAME}-${LANG}"
+    CNAME="devlab-${LANG}"    
+fi
 
 # Check if we are already running the devlab
-docker ps --filter "name=devlab" | tail -1 | grep -q devlab
+docker ps --filter "name=^${CNAME}$" | tail -1 | grep -q ${CNAME}
 if [[ $? -eq 0 ]]; then
     # devlab is already running; we only allow to shell into it
     # or stop it if asked for. For any other command, ask the user
     # to stop it.
     if [[ $progarg == "shell" ]]; then
-        docker exec -it devlab /bin/zsh
+        docker exec -it ${CNAME} /bin/zsh
         exit 0
     elif [[ $progarg == "stop" ]]; then
         echo -n "Stopped "
-        docker stop devlab
+        docker stop ${CNAME}
         exit 0
     else
         echo -e "\033[0;31mdevlab is already running.\033[0m"
-        echo "You can shell into it with 'devlab shell'."
-        echo "OR stop it with 'devlab stop' before starting again."
+        echo "You can shell into it with 'devlab -l ${CNAME} shell'."
+        echo "OR stop it with 'devlab -l ${CNAME} stop' before starting again."
         exit 1
     fi
 else
@@ -92,23 +115,6 @@ else
         exit 1
     fi    
 fi    
-
-# Build parameters
-REPONAME=onspot/devlab
-LANG=$lang
-VERSION=$ver
-
-# Run parameters
-CNAME=devlab        # Name of the running devlab container
-JPYPORT=9000        # Port in which devlab runs (within the container)
-HPORT=${JPYPORT}    # Port in which devlab should run on the host machine
-
-# Adjust the image name based on the language name
-if [[ $LANG == "base" ]]; then
-    IMGNAME=${REPONAME}  # For base devlab, we'll keep the image name simple
-else
-    IMGNAME="${REPONAME}-${LANG}"
-fi
 
 # If we have a "trustedcerts" directory where we are running the devlab, just mount it
 # to /opt/certs. This directory contains additional PEM certificates that may be needed to 
@@ -141,7 +147,7 @@ printjpyinfo() {
     # to startup - so the URL can only be got from docker logs.
     if [[ $info != *"?token="* ]]; then
         echo -e '\033[0;31mJupyter took unusually long time to start.\033[0m'
-        echo 'Use "docker logs devlab" to get the URLs to access Jupyter.'
+        echo 'Use "docker logs ${CNAME}" to get the URLs to access Jupyter.'
 
         if [[ $JPYPORT -ne $HPORT ]]; then
             echo "NOTE: *** In the URL shown, use $HPORT as the port number instead of $JPYPORT ***"            
@@ -157,21 +163,47 @@ case $progarg in
     ;;
 "shell")
     rundevlab "/bin/zsh" "-it" 
+
+    if [[ $? -ne 0 ]]; then
+        echo -e '\033[0;31mdevlab failed to start, see above for the error details.\033[0m'
+        echo "Errors due to binding of ports can be circumvented with -p <port> option,"        
+        echo "where <port> should be a different port number than what is mentioned with the error above."             
+    fi    
     ;;
 "lab")
-    echo "Starting devlab..."
+    echo "Starting ${CNAME}..."
     rundevlab "jupyter lab --no-browser" "-d"    
-    sleep 2
-    printjpyinfo "$(docker logs ${CNAME} 2>&1)"
+
+    if [[ $? -eq 0 ]]; then
+        sleep 2
+        printjpyinfo "$(docker logs ${CNAME} 2>&1)"
+    else
+        echo -e '\033[0;31mdevlab failed to start, see above for the error details.\033[0m'
+        echo "Errors due to binding of ports can be circumvented with -p <port> option,"
+        echo "where <port> should be a different port number than what is mentioned with the error above."        
+    fi
     ;;
 "nb" | "notebook")
-    echo "Starting devlab notebook..."
+    echo "Starting ${CNAME} notebook..."
     rundevlab "jupyter notebook --no-browser" "-d"    
-    sleep 2
-    printjpyinfo "$(docker logs ${CNAME} 2>&1)"    
+
+    if [[ $? -eq 0 ]]; then
+        sleep 2
+        printjpyinfo "$(docker logs ${CNAME} 2>&1)"
+    else
+        echo -e '\033[0;31mdevlab failed to start, see above for the error details.\033[0m'
+        echo "Errors due to binding of ports can be circumvented with -p <port> option,"
+        echo "where <port> should be a different port number than what is mentioned with the error above."             
+    fi
     ;;    
 "tmux")
     rundevlab "starttmux" "-it"
+
+    if [[ $? -ne 0 ]]; then
+        echo -e '\033[0;31mdevlab failed to start, see above for the error details.\033[0m'
+        echo "Errors due to binding of ports can be circumvented with -p <port> option,"        
+        echo "where <port> should be a different port number than what is mentioned with the error above."             
+    fi
     ;;
 *)
     echo -e "\033[0;31mInvalid command. Usage:\033[0m"
