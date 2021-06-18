@@ -27,20 +27,19 @@ Param(
   [Parameter()]
   [String]$l = "base",
   [String]$v = "latest",
+  [String]$p = "9000",  
   [Parameter(Position = 0, ValueFromRemainingArguments = $true)]
   [String]$progarg = "lab"
 )
 
 function Usage {
 @"
-devlab [-l <lang>] [-v <version>] <command>
+devlab [-l <lang>] [-v <version>] [-p <port>] <command>
 
 Options:
 -l <lang> - Language devlab to be started. Default: Python and Julia
 -v <version> - Version of the language devlab to be started. Default: latest
-
-<command> can be one of:
-devlab [-l <lang>] [-v <version>] <command>
+-p <port> - Port on which devlab listens. Default: 9000
 
 <command> can be one of:
 tmux - Starts a zsh shell with tmux
@@ -53,23 +52,41 @@ If no command is given, default is "lab".
 "@
 }
 
+# Build parameters
+$REPONAME = "onspot/devlab"
+$LANG = "$l"
+$VERSION = "$v"
+
+# Run parameters
+$JPYPORT = 9000       # Port in which devlab runs (within the container)
+$HPORT=$p             # Port in which devlab should run on the host machine
+
+# Adjust the image name based on the language name
+if ( $LANG -eq "base" ) {
+    $IMGNAME=${REPONAME}  # For base devlab, we'll keep the image name simple
+    ${CNAME}=devlab       # For base devlab, we'll keep the container name simple        
+} else {
+    $IMGNAME="${REPONAME}-${LANG}" 
+    ${CNAME}="devlab-${LANG}"        
+}
+
 # First, check if we are already running the devlab
-$cnt = docker ps --filter "name=devlab" | Measure-Object -line
+$cnt = docker ps --filter "name=^${CNAME}$" | Measure-Object -line
 if ( $cnt.Lines -eq 2 ) {
     # devlab is already running; we only allow to shell into it
     # or stop it if asked for. For any other command, ask the user
     # to stop it.
     if ( $progarg -eq "shell" ) {
-        docker exec -it devlab /bin/zsh
+        docker exec -it ${CNAME} /bin/zsh
         exit 0
     } elseif ( $progarg -eq "stop" ) {
         Write-Host -NoNewline "Stopped "
-        docker stop devlab
+        docker stop ${CNAME}
         exit 0
     } else {
         Write-Host "devlab is already running." -foreground red
-        Write-Output "You can shell into it with 'devlab shell'."
-        Write-Output "OR stop it with 'devlab stop' before starting again."
+        Write-Output "You can shell into it with 'devlab -l ${CNAME} shell'."
+        Write-Output "OR stop it with 'devlab -l ${CNAME} stop' before starting again."
         exit 1
     }
 } else {
@@ -80,23 +97,6 @@ if ( $cnt.Lines -eq 2 ) {
         exit 1
     }
 }  
-
-# Build parameters
-$REPONAME = "onspot/devlab"
-$LANG = "$l"
-$VERSION = "$v"
-
-# Run parameters
-$CNAME = "devlab"     # Name of the running devlab container
-$JPYPORT = 9000       # Port in which devlab runs (within the container)
-$HPORT=${JPYPORT}     # Port in which devlab should run on the host machine
-
-# Adjust the image name based on the language name
-if ( $LANG -eq "base" ) {
-    $IMGNAME=${REPONAME}  # For base devlab, we'll keep the image name simple
-} else {
-    $IMGNAME="${REPONAME}-${LANG}" 
-}
 
 # If we have a "trustedcerts" directory where we are running the devlab, just mount it
 # to /opt/certs. This directory contains additional PEM certificates that may be needed to 
@@ -113,7 +113,14 @@ if ( Test-Path trustedcerts/* ) {
 # The command to be run comes from the case-statement below.
 function RunDevlab($cmd, $mode) {
     $args = "run --rm -p ${HPORT}:${JPYPORT} ${mode} --mount src=devlab-${LANG}-${VERSION},dst=/home/dev ${MOUNT_CERTS} --name ${CNAME} --hostname localhost ${IMGNAME}:${VERSION} ${cmd}"
-    & docker $args.split()
+
+    # Calling docker returns the container id. We capture that in a variable
+    # cid, because, in Powershell, all "uncaptured" information is returned
+    # when this function returns. We specifically only return $? below.
+    $cid = & docker $args.split()
+    
+    # Return the error status of the above command
+    $?    
 }
 
 # This function extracts jupyter information from the logs and prints the same on the console
@@ -128,7 +135,7 @@ function PrintJpyInfo($logs) {
     # to startup - so the URL can only be got from docker logs.
     if ( $info -notlike "*?token=*" ) {
         Write-Host 'Jupyter took unusually longer time to start.' -foreground red
-        Write-Output 'Use "docker logs devlab" to get the URLs to access Jupyter.'
+        Write-Output "Use `"docker logs ${CNAME}`" to get the URLs to access Jupyter."
 
         if ( $JPYPORT -ne $HPORT ) {
             Write-Output "NOTE: *** In the URL, use $HPORT as the port number instead of $JPYPORT ***"
@@ -142,22 +149,48 @@ switch ($progarg) {
         exit 0
     }
     "shell" {
-        RunDevlab "/bin/zsh" "-it" 
+        $ret = RunDevlab "/bin/zsh" "-it" 
+
+        if (!$ret) {
+            Write-Host 'devlab failed to start, see above for the error details.' -foreground red
+            Write-Output "Errors due to binding of ports can be circumvented with -p <port> option,"
+            Write-Output "where <port> should be a different port number than what is mentioned with the error above."
+        }        
     }
     "lab" {
-        Write-Output "Starting devlab..."    
-        RunDevlab "jupyter lab --no-browser" "-d"                    
-    	Start-Sleep -Seconds 2
-        PrintJpyInfo $(docker logs ${CNAME} 2>&1)
+        Write-Output "Starting ${CNAME}..."    
+        $ret = RunDevlab "jupyter lab --no-browser" "-d"   
+
+        if ($ret) {
+            Start-Sleep -Seconds 2
+            PrintJpyInfo $(docker logs ${CNAME} 2>&1)            
+        } else {
+            Write-Host 'devlab failed to start, see above for the error details.' -foreground red
+            Write-Output "Errors due to binding of ports can be circumvented with -p <port> option,"
+            Write-Output "where <port> should be a different port number than what is mentioned with the error above."
+        }                
     }
     {($_ -eq "nb") -or ($_ -eq "notebook")} {
-        Write-Output "Starting notebook..."    
-        RunDevlab "jupyter notebook --no-browser" "-d"            
-    	Start-Sleep -Seconds 2
-        PrintJpyInfo $(docker logs ${CNAME} 2>&1)        
+        Write-Output "Starting ${CNAME} notebook..."    
+        $ret = RunDevlab "jupyter notebook --no-browser" "-d"   
+
+        if ($ret) {
+            Start-Sleep -Seconds 2
+            PrintJpyInfo $(docker logs ${CNAME} 2>&1)        
+        } else {
+            Write-Host 'devlab failed to start, see above for the error details.' -foreground red
+            Write-Output "Errors due to binding of ports can be circumvented with -p <port> option,"
+            Write-Output "where <port> should be a different port number than what is mentioned with the error above."            
+        }
     }        
     "tmux" {
-        RunDevlab "starttmux" "-it"
+        $ret = RunDevlab "starttmux" "-it"
+
+        if (!$ret) {
+            Write-Host 'devlab failed to start, see above for the error details.' -foreground red
+            Write-Output "Errors due to binding of ports can be circumvented with -p <port> option,"
+            Write-Output "where <port> should be a different port number than what is mentioned with the error above."
+        }        
     }
     Default {
         Write-Host "Invalid command. Usage:" -foreground red
