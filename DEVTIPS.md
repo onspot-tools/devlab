@@ -26,6 +26,7 @@ In your `dotask` script, you will additionally need to check if a cron-entry is 
 
 The function below will do all these for you:
 
+```bash
     function setup_cron {
         # Add cron entry to run `dotask` every hour from 9 to 6, every day.
         # The redirection to null is done to avoid the message 
@@ -36,15 +37,18 @@ The function below will do all these for you:
         ps -aef | awk '{print $8}' | grep -q cron
         if [ $? -ne 0 ]; then cron; fi
     }
+```
 
 All you have to now do is to call the above function, also in your `dotask` script, if the cron entries are not yet added:
 
+```bash
     crontab -l 2>/dev/null | grep -q dotask
     if [ $? -ne 0 ]; then
         # We do not have the cron entry in the crontab. This means the script is started for
         # the first time. Just set up cron in this system.
         setup_cron
     fi
+```
 
 ## Step-3: Start your task the first time during login
 Well, we have now set up a task to be started periodically. Who starts it the first time? We, of course!
@@ -55,17 +59,86 @@ Add this line in your startup script (`.zshrc`) too:
 
 Starting this script for the first time, automatically sets up the cron entries needed for every other time.
 
-# Adding yourself as a contributor to this project
-[all-contributors](https://github.com/all-contributors/all-contributors) gives us an easy CLI for managing contributors. Install that as follows:
+# Using VSCode for working with latex
+Install the [Latex Workshop](https://marketplace.visualstudio.com/items?itemName=James-Yu.latex-workshop) extension - this makes it very easy to work with latex files using devlab. 
 
-    npm i -g all-contributors-cli
+## Configuring Latex Workshop
+On default, VSCode is configured to use pdflatex as your latex-to-pdf compiler. Unfortunately, pdflatex does not support Unicode directly, and so we need to use `xelatex` or `lualatex` for unicode support.
 
-This installs the all-contributors-cli as a global node tool. To add yourself as a contributor, you use this command:
+The good thing is that both of these are already available within devlab, and all you have to do is to configure VSCode's Latex Workshop to use the one that you want.
 
-    npx all-contributors add <your-github-uid> <contribution-type>
+Edit the VSCode settings.json file and `lulatex` and `xelatex` to your tools list (if they are not yet existing):
 
-The various contribution types are mentioned in the [emoji key here](https://allcontributors.org/docs/en/emoji-key). For example, to add yourself as a contributor for code, documentation, fixing bugs and for answering questions on stackoverflow, etc., use this:
+```json
+    "latex-workshop.latex.tools": [
+        {
+            "name": "lualatexmk",
+            "command": "latexmk",
+            "args": [
+                "-synctex=1",
+                "-interaction=nonstopmode",
+                "-file-line-error",
+                "-lualatex",
+                "-outdir=%OUTDIR%",
+                "%DOC%"
+            ],
+            "env": {}
+        },
+        {
+            "name": "xelatexmk",
+            "command": "latexmk",
+            "args": [
+                "-synctex=1",
+                "-interaction=nonstopmode",
+                "-file-line-error",
+                "-xelatex",
+                "-outdir=%OUTDIR%",
+                "%DOC%"
+            ],
+            "env": {}
+        }
+    ]      
+```
+Now, add build recepes (of they are not yet existing) that builds latex files using `xelatex` or `lulatex`. Note that the order of the recepes matter: on default, the Latex Workshop uses the first recepe to build:
 
-    npx all-contributors add <your-github-uid> code,doc,bug,question
+```json
+    "latex-workshop.latex.recipes": [
+        {
+            "name": "latexmk (lualatex)",
+            "tools": [
+                "lualatexmk"
+            ]
+        },
+        {
+            "name": "latexmk (xelatex)",
+            "tools": [
+                "xelatexmk"
+            ]
+        } 
+    ]
+```
 
-That's it! This command will add you as the contributor to this project for the contribution types given in your command and also commit the code. The changes are done in the [README.md](README.md) file - the last part of that file will contain your github avatar and your contributions as emojies.
+The above configures Latex Workshop to use `lualatex` for building. If you instead prefer `xelatex`, just flip the order of the two recepes above (such that `latexmk (xelatex)` comes first).
+
+Default configuration of Latex Workshop is to also produce all the auxilliary and output files in the same directory as your tex input file. To change this behaviour, adding this setting to your settings file is also recommended:
+
+    "latex-workshop.latex.outDir": "%DIR%/out"
+
+This will make sure that your input file directory is not clobbered with additional files. Your output pdf file will be generted in the `out` subdirectory.
+
+Additionally, you may need to install the powerline fonts to use unicode fonts for Latex. 
+
+# Installing powerline fonts
+For good use of latex that comes for free withing all devlabs, you may want to add powerline fonts for unicode support. Just install those fonts in your home directory using these instructions:
+
+```bash
+# clone
+git clone https://github.com/powerline/fonts.git --depth=1
+# install
+cd fonts
+./install.sh
+# clean-up a bit
+cd ..
+rm -rf fonts
+```
+See [here](https://github.com/powerline/fonts) for more information.

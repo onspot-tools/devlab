@@ -70,6 +70,21 @@ devlab is designed in such a way that you will be using it as a user `dev` with 
 
 **Use both of these with care**, as you can really damage your system with these.
 
+# Running multiple devlabs simultanueously
+In many situations, you may want to run two or more devlabs together - for example, you may want to work both with dotnet languages (such as C# or F#) and with Java at the same time. Since a specific devlab is only for specific languages, this will need that you run two or more devlabs at the same time.
+
+It is exactly for this that devlabs come with `-p <port>` option. On default, devlabs run on port 9000. However, for running multiple devlabs, each of them need to use a different port. So, to start two devlabs:
+
+Start the first one as usual:
+
+    devlab -l dotnet
+
+Start the second one, specifying a port different from the default:
+
+    devlab -l java -p 9001
+
+devlab-java now runs on port 9001 (devlab-dotnet runs on the default port 9000). You can run any number of devlabs simultaneously, provided you specify a different port for each instance of devlab you run.
+
 # Using devlab behind a proxy
 Use of devlab behind a proxy server is a fully supported scenario. Proxy supporting only NTLM authentication is also possible, but only with a NTLM proxy helper like [px](https://github.com/genotrance/px), [cntlm](http://cntlm.sourceforge.net/) or [ntlmaps](http://ntlmaps.sourceforge.net/).
 
@@ -88,8 +103,6 @@ If you work with Latex, then the [Latex Workshop](https://marketplace.visualstud
 
 Additionally, for using VSCode with devlab behind a proxy, there are some VScode settings that are needed to be done: go to settings, search for "proxy", and then put in your proxy settings there (proxy name and port, SSL strictness, etc.)
 
-# Running devlab on a port different from 9000
-devlab runs on TCP port 9000 by default. If you want to change this, you need to edit the `devlab` script (in Linux / Unix, on Windows, this is the `devlap.ps1`). Search for the variable HPORT, and change that to what you would like devlab to run on.
 # Contributing to devlab
 Well, anybody is welcome to contributing to this project, and [All Contributors](https://allcontributors.org/) are recognised for their contribution! [Check out here](CONTRIBUTING.md) to know how you can contribute to making devlab the best place for developers to quickly get on to a development laboratory.
 
